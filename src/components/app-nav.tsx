@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
-import { CalendarDays, ListChecks, Home } from "lucide-react";
+import { CalendarDays, ListChecks, Home, GraduationCap } from "lucide-react";
 
 const links = [
   { href: "/dashboard", label: "Today", icon: Home },
   { href: "/courses", label: "Courses", icon: ListChecks },
   { href: "/calendar", label: "Calendar", icon: CalendarDays },
+  { href: "/grades", label: "Grades", icon: GraduationCap },
 ];
 
 export function AppNav() {

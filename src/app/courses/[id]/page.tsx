@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
@@ -5,6 +6,8 @@ import { AppNav } from "@/components/app-nav";
 import { AssignmentRow } from "@/components/assignment-row";
 import { NewAssignmentForm } from "@/components/new-assignment-form";
 import { DeleteCourseButton } from "@/components/delete-course-button";
+import { Button } from "@/components/ui/button";
+import { GraduationCap } from "lucide-react";
 
 export default async function CourseDetailPage({
   params,
@@ -29,7 +32,18 @@ export default async function CourseDetailPage({
       <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold tracking-tight">{course.name}</h1>
-          <DeleteCourseButton courseId={course.id} />
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              render={
+                <Link href={`/courses/${course.id}/grades`}>
+                  <GraduationCap className="size-4" /> Grades
+                </Link>
+              }
+            />
+            <DeleteCourseButton courseId={course.id} />
+          </div>
         </div>
 
         <div className="mt-6">

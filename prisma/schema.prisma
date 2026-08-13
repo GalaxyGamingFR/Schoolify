@@ -159,12 +159,13 @@ model Assignment {
 }
 
 model GradeCategory {
-  id           String   @id @default(cuid())
-  course       Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  courseId     String
-  name         String // e.g. "Exams"
-  weight       Float // percentage points, e.g. 40 for 40%
-  dropLowestN  Int      @default(0)
+  id              String   @id @default(cuid())
+  course          Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId        String
+  name            String // e.g. "Exams"
+  weight          Float // percentage points, e.g. 40 for 40%
+  dropLowestN     Int      @default(0)
+  curveAdjustment Float    @default(0) // flat percentage points added after averaging
 
   gradeEntries GradeEntry[]
 
@@ -173,9 +174,9 @@ model GradeCategory {
 
 model GradeEntry {
   id           String         @id @default(cuid())
-  category     GradeCategory  @relation(fields: [categoryId], references: [id])
+  category     GradeCategory  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   categoryId   String
-  assignment   Assignment?    @relation(fields: [assignmentId], references: [id])
+  assignment   Assignment?    @relation(fields: [assignmentId], references: [id], onDelete: SetNull)
   assignmentId String?
   label        String
   pointsEarned Float

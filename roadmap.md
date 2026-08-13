@@ -85,6 +85,30 @@ counts, ownership-scoped update, cross-user update correctly matching zero rows,
 nulling `courseId` instead of erroring) run end-to-end against local dev data with the expected
 results. Not verified: real browser interaction (forms, clicks, calendar navigation).
 
+## Phase 2 — Gradebook & GPA (Weeks 6–8) — *Module B*
+- [x] Grade categories (name/weight/drop-lowest-N/curve adjustment) with live computed course
+      grade — `/courses/[id]/grades`. Uses the "total points" method (sum earned / sum possible),
+      not averaged per-entry percentages, so entries with different point values don't skew it
+- [x] GPA — `/grades` overview across all courses. Scope decision: standard **unweighted 4.0
+      scale** only (A=4.0 … F=0.0, standard ±0.3 half-steps), hardcoded rather than
+      user-configurable. The plan called out "configurable scale (4.3/percentage)" as a
+      Phase 2 nice-to-have; building a per-user/per-institution scale picker without a real user
+      asking for a specific scale would be speculative — deferred
+- [x] What-if scenario tester — client-side only (not persisted), lets a student add a
+      hypothetical score to any category and see the projected course grade update live
+- [x] Drop-lowest-N and curve adjustment — both schema fields, applied in `computeCategoryPercent`
+- [x] Extra credit — no special handling needed; an entry with `pointsEarned > pointsPossible`
+      just naturally pushes the percentage over 100, capped at 4.0 GPA points same as any A+
+- [ ] Degree/prerequisite blueprint tracker — deferred to Phase 9 as originally planned
+
+**Verified:** lint and build clean. Grade math checked against hand-calculated expected values
+using the actual `src/lib/grades.ts` module directly (Node's native TS support), covering
+drop-lowest-N, curve adjustment, weighted course grade, weight-normalization when categories
+don't sum to 100%, empty categories being excluded rather than counted as zero, extra credit
+capping at 4.0 GPA points, and the GPA average itself. Schema/cascade behavior (category→course,
+entry→category, ownership isolation) verified against local dev data. Not verified: real browser
+interaction.
+
 **Exit criteria:** you personally track your own coursework with it for a full week.
 
 ## Phase 2 — Gradebook & GPA (Weeks 6–8) — *Module B*
