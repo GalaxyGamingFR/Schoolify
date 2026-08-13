@@ -141,10 +141,15 @@ export async function getOrCreateCourseConversation(courseId: string) {
   return conversation;
 }
 
+const MAX_MESSAGE_LENGTH = 4000;
+
 export async function sendMessage(input: { conversationId: string; body: string }) {
   const user = await getCurrentDbUser();
   if (!user) throw new Error("Not signed in");
   if (!input.body.trim()) throw new Error("Message can't be empty");
+  if (input.body.length > MAX_MESSAGE_LENGTH) {
+    throw new Error(`Message is too long (max ${MAX_MESSAGE_LENGTH} characters)`);
+  }
 
   await assertConversationAccess(user.id, input.conversationId);
 

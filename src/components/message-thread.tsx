@@ -137,7 +137,13 @@ export function MessageThread({
         }}
         className="mt-3 flex gap-2"
       >
-        <Input name="body" placeholder="Write a message..." autoComplete="off" disabled={isPending} />
+        <Input
+          name="body"
+          placeholder="Write a message..."
+          autoComplete="off"
+          disabled={isPending}
+          maxLength={4000}
+        />
         <Button type="submit" size="icon" aria-label="Send" disabled={isPending}>
           <Send className="size-4" />
         </Button>

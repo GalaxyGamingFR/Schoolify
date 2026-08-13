@@ -477,6 +477,99 @@ the 5 intended titles. Not verified: real browser interaction.
 
 ---
 
+## Production incident (2026-08-13): account deletion crashed on FK constraint
+
+Caught by actually testing the live site end-to-end after deploying Phases 6/6.5/8/9 — not by
+lint, build, or any of the hand-verification scripts, since none of them exercised deleting a user
+that already had data attached. Deleting a Clerk account (via the account's own "Delete account"
+button) crashed the `user.deleted` webhook with a Postgres foreign key violation on `Assignment`:
+none of the ~15 relations pointing at `User` had ever declared an `onDelete` behavior, so Postgres
+defaulted every one of them to `RESTRICT`. **Right-to-delete was silently broken for any account
+with real data** since the schema was first written — this had nothing to do with the phases built
+tonight specifically, it was latent from Phase 0/1 onward and just never got exercised by a test
+that both created data and then deleted the owning user in the same run.
+
+Fixed with an explicit `onDelete` on every one of those relations: personal data (assignments,
+enrollments, calendar events, activities, degree/application records, sent messages, blocks,
+filed reports, guardianship links) cascades away with the account; shared structures a user merely
+had a role in (a `Course` they taught, a `SchoolStaff` seat) get `SetNull` instead, so deleting one
+teacher's account doesn't take an entire class's course and roster down with it. Verified against
+local dev data before touching production again: a teacher's account deletion leaves their course
+intact with `teacherId` nulled, and a student's deletion (with assignments/enrollments/calendar
+events attached — the exact shape that broke production) now succeeds without error.
+
+Separately, the same testing pass also caught the production `DATABASE_URL`/`DIRECT_URL` had
+drifted to a stale password (unrelated to anything built tonight — the credential the user
+provided from Supabase's dashboard differed from what Vercel had stored), which had been silently
+failing the `user.deleted`/`user.updated` webhook and any authenticated page load. Fixed by
+updating Vercel's env vars to the current Supabase credentials and redeploying. See
+`reference_production_migration_workflow` memory for why `vercel env pull` couldn't be used to
+diagnose this directly (the vars are marked Sensitive, which masks their value even from the
+authenticated project owner via CLI).
+
+## Lighthouse / security / scaling pass (2026-08-13)
+
+Requested explicitly: audit the whole site with Lighthouse, optimize, and hold it to "handle
+millions of users with no issues, no security vulnerabilities." Being precise about what that
+actually means: **no load test was run against production** — doing that against a live site
+without dedicated load-testing infrastructure would risk causing the exact outage it's meant to
+rule out, so "handles millions of users" here means the specific things below were checked and
+fixed, not that the claim was proven under real load. Real confidence at that scale would need
+actual load-testing tooling (k6, Artillery, or similar) run deliberately, not as a side effect of
+an agent session.
+
+- [x] `npm audit` — 0 vulnerabilities in dependencies at time of check.
+- [x] Lighthouse (public pages only — everything else requires auth, which Lighthouse can't drive
+      without extra scripting not attempted here): landing page scored 87/98/100/100
+      (perf/a11y/best-practices/SEO) before fixes. Fixed: the landing page did a server-side
+      `currentUser()` check purely to redirect already-signed-in visitors, which made the page
+      dynamic (`Cache-Control: no-store`) — this both slowed first paint (a fresh server
+      round-trip on every visit) and disabled the browser's back/forward cache entirely. Moved
+      that redirect to a small client component (`RedirectIfSignedIn`) so the page itself is now
+      static/prerendered (confirmed in the build output: `○ /` instead of `ƒ /`). Also fixed a
+      missing `<main>` landmark on `/`, `/sign-in`, and `/sign-up` (an accessibility audit
+      failure). Left alone: ~200KB of "unused" JS from Clerk's own SDK — that's Clerk preloading
+      its hosted sign-in/up UI for faster click-through, not something worth hacking around given
+      Clerk is the deliberately chosen auth provider.
+- [x] Security review (manual, code-level — not a pen test): every one of the 46 exported server
+      actions across `src/lib/actions/*.ts` checks both "is this person signed in" and "does this
+      person own/have access to the specific record" (spot-checked the ones using a two-step
+      check-then-act pattern instead of a single scoped query, e.g. `updateUniversityStatus` — not
+      a TOCTOU risk here since there's no concurrent-mutation window within one request). No raw
+      SQL anywhere (`$queryRaw`/`$executeRaw` grep came back empty — Prisma parameterizes
+      everything), no `dangerouslySetInnerHTML`, no hardcoded secrets, no `NEXT_PUBLIC_*` misuse.
+      Fixed one real gap: `sendMessage` had no length cap on the message body (unbounded `TEXT`
+      column + a frequent, low-friction write path is a real abuse/storage vector) — added a
+      4000-character server-side cap plus a matching client-side `maxLength`.
+- [x] Scaling review: no N+1 query patterns found (grepped for Prisma calls inside loops/maps —
+      the only loops found were the bounded 5-attempt join-code collision retry in
+      `school.ts`, not a real concern at 33^6 possible codes). Query patterns already have
+      matching indexes (e.g. `Message` has `@@index([conversationId, createdAt])`, exactly the
+      shape the thread view queries). `src/lib/prisma.ts` uses the standard Prisma-recommended
+      Next.js singleton pattern. Added `connection_limit=1` to the production `DATABASE_URL` — the
+      Prisma-documented setting for pgbouncer-pooled connections in serverless: each function
+      instance only needs one connection since the pooler multiplexes them, and the previous
+      unset value meant each cold-started instance could claim several.
+- [ ] **Not done — a real gap, not silently papered over:** there is no rate limiting anywhere.
+      Nothing throttles repeated calls to `sendMessage`, `reportMessage`, `registerSchool`,
+      `inviteGuardian`, or any other action. At real scale this is an abuse vector (message spam,
+      moderation-queue flooding, guardian-invite spam). Fixing it properly needs an infrastructure
+      decision (Vercel's own rate limiting, or an external store like Upstash Redis) that hasn't
+      been made — consistent with this project's standing rule of not bolting on new infra
+      speculatively (see the Stack section's "no Redis until something actually needs it").
+- [x] Branded Clerk's hosted `SignIn`/`SignUp`/`UserButton` widgets to match Schoolify's design
+      system instead of generic default Clerk styling (`src/lib/clerk-appearance.ts`) — passed to
+      `ClerkProvider` as an `appearance` prop using the app's own CSS custom properties (`var(
+      --card)`, `var(--primary)`, etc.) rather than hardcoded colors, so the widgets automatically
+      track the light/dark theme the rest of the app already uses instead of needing a
+      hand-maintained second palette. This was explicitly deferred in Phase 3 ("Clerk's own
+      widgets aren't reskinned for dark mode") — this is that follow-up. Verified in a real
+      browser in both themes (a live in-page class toggle showed a stale partial render, which
+      turned out to be an artifact of that crude test method, not a real bug — a genuine fresh
+      page load in each theme rendered correctly).
+
+---
+
 ## Deferred
 
 - **Jarvis** (PC assistant project) — parked until after Phase 3, once Schoolify has real users
