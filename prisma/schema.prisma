@@ -50,6 +50,16 @@ enum Priority {
   HIGH
 }
 
+// Every relation below that points at User now declares an explicit
+// onDelete — found the hard way when a real account deletion in production
+// crashed the Clerk `user.deleted` webhook with a foreign key violation on
+// Assignment (Prisma/Postgres default FK behavior is RESTRICT, and none of
+// these had ever specified otherwise). Personal data (assignments,
+// enrollments, calendar events, activities, degree/application records,
+// messages, blocks, reports, guardianship links) cascades away with the
+// account; shared structures a deleted user merely had a role in (a
+// Course they taught, a SchoolStaff seat) get SetNull instead so deleting
+// one teacher's account doesn't take an entire class's course down with it.
 model User {
   id          String   @id @default(cuid())
   clerkId     String   @unique
@@ -94,9 +104,9 @@ model User {
 
 model Guardianship {
   id        String             @id @default(cuid())
-  parent    User               @relation("ParentGuardianships", fields: [parentId], references: [id])
+  parent    User               @relation("ParentGuardianships", fields: [parentId], references: [id], onDelete: Cascade)
   parentId  String
-  student   User               @relation("StudentGuardianships", fields: [studentId], references: [id])
+  student   User               @relation("StudentGuardianships", fields: [studentId], references: [id], onDelete: Cascade)
   studentId String
   status    GuardianshipStatus @default(PENDING)
   createdAt DateTime           @default(now())
@@ -142,7 +152,7 @@ model SchoolStaff {
   // Null until the invited email actually signs in and gets claimed
   // (claimSchoolInvites) — an invite can be sent to someone without a
   // Schoolify account yet.
-  user      User?       @relation(fields: [userId], references: [id])
+  user      User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
   userId    String?
   email     String // lowercase-normalized; the claim key for INVITED rows
   role      SchoolRole
@@ -180,7 +190,7 @@ model Course {
   // every course before this phase. Ownership checks in courses.ts branch
   // on this: a self-tracked course is owned by any enrolled student (as
   // before), a school-managed one only by its teacher.
-  teacher   User?    @relation("TaughtCourses", fields: [teacherId], references: [id])
+  teacher   User?    @relation("TaughtCourses", fields: [teacherId], references: [id], onDelete: SetNull)
   teacherId String?
   // Set only alongside teacherId — students self-join with this code,
   // gated on their own email domain matching the School's.
@@ -197,7 +207,7 @@ model Course {
 
 model Enrollment {
   id        String   @id @default(cuid())
-  student   User     @relation(fields: [studentId], references: [id])
+  student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
   studentId String
   course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   courseId  String
@@ -209,7 +219,7 @@ model Enrollment {
 
 model Assignment {
   id               String           @id @default(cuid())
-  user             User             @relation(fields: [userId], references: [id])
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId           String
   // Optional so quick-add can create an uncategorized task and the student
   // triages it into a course later — see roadmap.md Phase 1 quick-add flow.
@@ -264,7 +274,7 @@ model GradeEntry {
 
 model CalendarEvent {
   id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
   title     String
   startsAt  DateTime
@@ -347,7 +357,7 @@ enum ActivityCategory {
 /** One line of a student's portfolio/resume. */
 model Activity {
   id           String           @id @default(cuid())
-  user         User             @relation(fields: [userId], references: [id])
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId       String
   title        String
   organization String?
@@ -376,7 +386,7 @@ enum ApplicationStatus {
 /** A university/program a student is tracking — not matched against any admissions data, just self-entered. */
 model UniversityTarget {
   id                  String            @id @default(cuid())
-  user                User              @relation(fields: [userId], references: [id])
+  user                User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId              String
   name                String
   applicationDeadline DateTime?
@@ -412,7 +422,7 @@ model ApplicationTask {
  */
 model DegreeRequirement {
   id               String   @id @default(cuid())
-  user             User     @relation(fields: [userId], references: [id])
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId           String
   label            String // e.g. "General Education — English"
   category         String? // free-text grouping, e.g. "Core", "Major", "Elective"
@@ -473,7 +483,7 @@ model ConversationParticipant {
   id             String       @id @default(cuid())
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   conversationId String
-  user           User         @relation(fields: [userId], references: [id])
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         String
   joinedAt       DateTime     @default(now())
   lastReadAt     DateTime?
@@ -486,7 +496,7 @@ model Message {
   id             String       @id @default(cuid())
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   conversationId String
-  sender         User         @relation("SentMessages", fields: [senderId], references: [id])
+  sender         User         @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
   senderId       String
   body           String
   createdAt      DateTime     @default(now())
@@ -509,7 +519,7 @@ model Report {
   id         String       @id @default(cuid())
   message    Message      @relation(fields: [messageId], references: [id], onDelete: Cascade)
   messageId  String
-  reporter   User         @relation("FiledReports", fields: [reporterId], references: [id])
+  reporter   User         @relation("FiledReports", fields: [reporterId], references: [id], onDelete: Cascade)
   reporterId String
   reason     String
   status     ReportStatus @default(OPEN)
@@ -522,9 +532,9 @@ model Report {
 /** One-directional: blockerId no longer sees blockedId's messages and can't start a new DM with them. */
 model Block {
   id        String   @id @default(cuid())
-  blocker   User     @relation("BlockedByMe", fields: [blockerId], references: [id])
+  blocker   User     @relation("BlockedByMe", fields: [blockerId], references: [id], onDelete: Cascade)
   blockerId String
-  blocked   User     @relation("BlockedMe", fields: [blockedId], references: [id])
+  blocked   User     @relation("BlockedMe", fields: [blockedId], references: [id], onDelete: Cascade)
   blockedId String
   createdAt DateTime @default(now())
 
