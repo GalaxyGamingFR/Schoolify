@@ -13,6 +13,8 @@ import {
   FileUser,
   ClipboardList,
   Milestone,
+  MessageSquare,
+  ShieldAlert,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -29,6 +31,7 @@ const primaryLinks = [
   { href: "/courses", label: "Courses", icon: ListChecks },
   { href: "/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/grades", label: "Grades", icon: GraduationCap },
+  { href: "/messages", label: "Messages", icon: MessageSquare },
 ];
 
 // Grouped into "More" once the primary set filled the header — see
@@ -49,6 +52,9 @@ const moreLinks = [
 export async function AppNav() {
   const user = await getCurrentDbUser();
   const isParent = user?.role === "PARENT";
+  const links = user?.role === "ADMIN"
+    ? [...moreLinks, { href: "/moderation", label: "Moderation", icon: ShieldAlert }]
+    : moreLinks;
 
   return (
     <header className="sticky top-0 z-10 border-b bg-background">
@@ -91,7 +97,7 @@ export async function AppNav() {
                   }
                 />
                 <DropdownMenuContent align="end">
-                  {moreLinks.map(({ href, label, icon: Icon }) => (
+                  {links.map(({ href, label, icon: Icon }) => (
                     <DropdownMenuItem key={href} render={<Link href={href} />}>
                       <Icon className="size-4" /> {label}
                     </DropdownMenuItem>

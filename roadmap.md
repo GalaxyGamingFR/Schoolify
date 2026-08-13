@@ -15,9 +15,10 @@ See `claude.md` for the full product spec (all 8 modules, end-state vision).
 - ORM: Prisma
 - Auth: Clerk
 - Hosting: Vercel
-- Realtime: deferred until Phase 8 (Supabase Realtime / Pusher)
+- Realtime: short-interval client polling (Phase 8), not Supabase Realtime/Pusher/WebSockets — see
+  Phase 8 below for why
 
-No separate backend service, no GraphQL, no Redis until messaging (Phase 8) actually needs them.
+No separate backend service, no GraphQL, no Redis — Phase 8 messaging landed without needing them.
 
 ---
 
@@ -334,11 +335,66 @@ riskier `Select`-wrapping-`Link` composition that was drafted first and reverted
 clear that couldn't be trusted without visual testing) hasn't been clicked through for real.
 
 ## Phase 8 — Messaging & Study Networks (Weeks 21+) — *Module E*
-Last on purpose — most expensive module, most risk.
+Last on purpose — most expensive module, most risk. Scope is intentionally text-only: no voice,
+whiteboards, or flashcard decks — CLAUDE.md's Module E description goes further than this
+checklist, which is `roadmap.md`'s own stated source of truth for build order, and voice is
+explicitly "(maybe)" below.
 
-- [ ] Realtime infrastructure (Supabase Realtime / Pusher)
-- [ ] Moderation, reporting, blocking — required before any messaging ships
-- [ ] DMs → group chats → (maybe) voice
+- [x] **Realtime infrastructure — short-interval client polling, not Supabase Realtime/Pusher/
+      WebSockets.** Real Supabase Realtime needs Postgres Row-Level Security wired to Clerk's
+      issued JWTs (this app has no RLS policies anywhere — every permission check lives in the
+      Prisma/server-action layer instead); turning on table-change broadcast without that RLS
+      would let anyone holding the public anon key subscribe to *every* row change client-side,
+      including private DMs, bypassing every permission check this app relies on. Vercel Functions
+      also support WebSockets natively, which would avoid the RLS problem entirely (same
+      server-side auth model, just a persistent connection instead of Supabase) — but that would
+      need live browser testing to verify a socket actually stays open and delivers pushes, which
+      this environment can't do. Client polling every 4s (`getMessagesSince`) keeps every
+      authorization check exactly where the rest of the app already puts it, and is something this
+      session *could* verify end-to-end. Swapping in real push is a fast-follow, not a rewrite —
+      the read/write path doesn't change, only how the client learns something new arrived
+- [x] Moderation, reporting, blocking — shipped alongside messaging, not after, per this phase's
+      own requirement. `reportMessage` (any conversation participant, on any message they can see)
+      → `/moderation`, an `ADMIN`-only queue (`role: ADMIN` has no self-service path — like
+      `SCHOOL_ADMIN`-style trust in Phase 6.5, it's set directly in the database by a real
+      operator, not something a user can grant themselves) → remove (soft-delete, `Message.
+      deletedAt`) or dismiss. `Block` is receiver-side and one-directional: a block hides the
+      blocked user's messages from the blocker and prevents *new* DIRECT conversations between
+      them, but doesn't retroactively nuke conversation history or notify the blocked user
+- [x] DMs → group chats — `Conversation{type: DIRECT|GROUP|COURSE}` + `ConversationParticipant`.
+      **The load-bearing safety decision:** direct/group messaging is only allowed between people
+      who share a course (classmates, or a teacher and their enrolled student) —
+      `canMessageDirectly` in `src/lib/messaging.ts` — not open messaging to any user
+      platform-wide. On a platform used by minors, an open contact graph (message anyone by
+      search/email) is a real risk; bounding it to "people already in the same class" is a
+      meaningfully safer default and was chosen deliberately over building the more "normal" open
+      DM UX
+- [x] Course-based micro-communities (the other half of Module E, not explicitly itemized in this
+      checklist but the first bullet of CLAUDE.md's Module E) — `type: COURSE` conversations,
+      created lazily on first visit (`getOrCreateCourseConversation`) rather than eagerly for every
+      course. Membership is derived live from `Course.teacherId`/`Enrollment` — **not** a static
+      `ConversationParticipant` list — so a roster change takes effect immediately with no sync
+      step. Scoped to school-managed courses only (`teacherId` set): a self-tracked personal
+      course only ever has one enrolled student, so a chat channel for it would be a channel with
+      nobody to talk to
+- [ ] Voice — not built, matches the "(maybe)" in the original plan
+
+**Verified:** lint and build clean (caught a real type error during build: `Select`'s
+`onValueChange`, same class of issue as Phase 9). Hand-calculated suite for `src/lib/messaging.ts`
+(the eligibility gate under all four share-course/blocked combinations — including confirming a
+shared course does *not* override a block — and both blocked-sender filtering and unread-count
+edge cases) passes against the actual module. End-to-end Prisma verification against local dev
+data: an enrolled student and the teacher have course-chat access while a non-enrolled stranger
+doesn't; a DIRECT conversation's participant list correctly excludes someone never added to it; a
+block hides the blocked sender's messages from the blocker while leaving the sender's own view
+unaffected; the report → soft-delete-and-resolve flow correctly sets `deletedAt` and
+`RESOLVED_REMOVED` while the `Report` row itself survives (evidence isn't destroyed by the
+removal); the one-conversation-per-course unique constraint the get-or-create pattern depends on
+actually holds; and — specifically re-testing a subtle query-shape risk — the "reuse an existing
+DIRECT conversation" lookup correctly ignores a GROUP conversation that happens to contain the
+same two people, matching only a real DIRECT one. Not verified: real browser interaction, and in
+particular no live confirmation that the polling UI actually renders/updates correctly in a
+browser — the data layer it depends on is verified, the client rendering is not.
 
 ## Phase 9 — University Portal & Degree Blueprint (Later) — *Module D + rest of B*
 - [x] Portfolio/resume builder — `/portfolio` (CRUD: club/volunteer/leadership/summer-program/
@@ -414,7 +470,10 @@ the 5 intended titles. Not verified: real browser interaction.
       address (a teacher, a student, an ex-employee with a still-active account) could technically
       register the school first. A real launch to actual schools needs a manual verification/sales
       process before this gate is treated as sufficient, same category as the COPPA item above
-- [ ] Moderation/reporting/blocking shipped as a Phase 8 launch requirement, not a follow-up
+- [x] Moderation/reporting/blocking shipped as a Phase 8 launch requirement, not a follow-up — see
+      Phase 8 above. Caveat: the moderation queue needs an `ADMIN` user to actually review reports,
+      and nothing creates one — a real launch needs an operator to set that role directly in the
+      database (or a real admin-invite flow, not built) before reports have anyone to reach
 
 ---
 

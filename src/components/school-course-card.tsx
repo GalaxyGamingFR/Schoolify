@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { regenerateJoinCode } from "@/lib/actions/school";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ClassChatButton } from "@/components/class-chat-button";
 import { RefreshCw } from "lucide-react";
 
 type SchoolCourse = {
@@ -29,6 +30,7 @@ export function SchoolCourseCard({ course }: { course: SchoolCourse }) {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <ClassChatButton courseId={course.id} />
           <code className="rounded bg-muted px-2 py-1 text-sm font-semibold tracking-wider">
             {course.joinCode}
           </code>

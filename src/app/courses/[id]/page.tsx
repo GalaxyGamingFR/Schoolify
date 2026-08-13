@@ -6,6 +6,7 @@ import { AppNav } from "@/components/app-nav";
 import { AssignmentRow } from "@/components/assignment-row";
 import { NewAssignmentForm } from "@/components/new-assignment-form";
 import { DeleteCourseButton } from "@/components/delete-course-button";
+import { ClassChatButton } from "@/components/class-chat-button";
 import { Button } from "@/components/ui/button";
 import { GraduationCap } from "lucide-react";
 
@@ -33,6 +34,7 @@ export default async function CourseDetailPage({
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold tracking-tight">{course.name}</h1>
           <div className="flex items-center gap-1">
+            {course.teacherId && <ClassChatButton courseId={course.id} />}
             <Button
               variant="outline"
               size="sm"

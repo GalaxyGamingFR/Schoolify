@@ -82,6 +82,13 @@ model User {
   universityTargets  UniversityTarget[]
   degreeRequirements DegreeRequirement[]
 
+  // Phase 8: Messaging & Study Networks
+  conversations   ConversationParticipant[]
+  sentMessages    Message[]                 @relation("SentMessages")
+  filedReports    Report[]                  @relation("FiledReports")
+  blockedUsers    Block[]                   @relation("BlockedByMe")
+  blockedByUsers  Block[]                   @relation("BlockedMe")
+
   @@index([role])
 }
 
@@ -182,6 +189,7 @@ model Course {
   enrollments    Enrollment[]
   assignments    Assignment[]
   gradeCategories GradeCategory[]
+  conversation    Conversation?
 
   @@index([termId])
   @@index([teacherId])
@@ -420,4 +428,106 @@ model DegreeRequirement {
 
   @@index([userId])
   @@index([requiresId])
+}
+
+// --- Phase 8: Messaging & Study Networks (Module E) ---
+// Scope note: text messaging only — no voice, whiteboards, or flashcard
+// decks (CLAUDE.md's aspirational Module E description goes further than
+// roadmap.md's actual Phase 8 checklist, which is the source of truth for
+// build order; voice is explicitly "(maybe)" there). Transport is
+// short-interval client polling, not a WebSocket/Realtime push — see
+// roadmap.md for why: real push via Supabase Realtime needs Postgres RLS
+// wired to Clerk-issued JWTs (a nontrivial auth integration this pass
+// doesn't attempt), and Vercel Functions WebSockets can't be verified
+// end-to-end without live browser testing this environment doesn't have.
+// All authorization stays in the same Prisma/server-action layer as every
+// other feature, not delegated to database-level policies.
+
+enum ConversationType {
+  DIRECT
+  GROUP
+  COURSE
+}
+
+model Conversation {
+  id        String           @id @default(cuid())
+  type      ConversationType
+  // User-chosen for GROUP; null for DIRECT (derived from the other
+  // participant) and COURSE (derived from Course.name).
+  name      String?
+  // Only set for type=COURSE — membership for these is derived live from
+  // Course enrollments/teacherId (roster changes take effect immediately,
+  // no participant-row sync needed), so COURSE conversations don't use
+  // ConversationParticipant at all.
+  course    Course?          @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId  String?          @unique
+  createdAt DateTime         @default(now())
+
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@index([type])
+}
+
+model ConversationParticipant {
+  id             String       @id @default(cuid())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId String
+  user           User         @relation(fields: [userId], references: [id])
+  userId         String
+  joinedAt       DateTime     @default(now())
+  lastReadAt     DateTime?
+
+  @@unique([conversationId, userId])
+  @@index([userId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId String
+  sender         User         @relation("SentMessages", fields: [senderId], references: [id])
+  senderId       String
+  body           String
+  createdAt      DateTime     @default(now())
+  // Soft delete on moderation removal — keeps the Report's history intact
+  // instead of hard-deleting evidence of what was reported.
+  deletedAt      DateTime?
+
+  reports Report[]
+
+  @@index([conversationId, createdAt])
+}
+
+enum ReportStatus {
+  OPEN
+  RESOLVED_REMOVED
+  RESOLVED_DISMISSED
+}
+
+model Report {
+  id         String       @id @default(cuid())
+  message    Message      @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  messageId  String
+  reporter   User         @relation("FiledReports", fields: [reporterId], references: [id])
+  reporterId String
+  reason     String
+  status     ReportStatus @default(OPEN)
+  createdAt  DateTime     @default(now())
+
+  @@index([status])
+  @@index([messageId])
+}
+
+/** One-directional: blockerId no longer sees blockedId's messages and can't start a new DM with them. */
+model Block {
+  id        String   @id @default(cuid())
+  blocker   User     @relation("BlockedByMe", fields: [blockerId], references: [id])
+  blockerId String
+  blocked   User     @relation("BlockedMe", fields: [blockedId], references: [id])
+  blockedId String
+  createdAt DateTime @default(now())
+
+  @@unique([blockerId, blockedId])
+  @@index([blockedId])
 }
