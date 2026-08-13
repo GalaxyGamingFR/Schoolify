@@ -85,6 +85,8 @@ counts, ownership-scoped update, cross-user update correctly matching zero rows,
 nulling `courseId` instead of erroring) run end-to-end against local dev data with the expected
 results. Not verified: real browser interaction (forms, clicks, calendar navigation).
 
+**Exit criteria:** you personally track your own coursework with it for a full week.
+
 ## Phase 2 — Gradebook & GPA (Weeks 6–8) — *Module B*
 - [x] Grade categories (name/weight/drop-lowest-N/curve adjustment) with live computed course
       grade — `/courses/[id]/grades`. Uses the "total points" method (sum earned / sum possible),
@@ -109,18 +111,24 @@ capping at 4.0 GPA points, and the GPA average itself. Schema/cascade behavior (
 entry→category, ownership isolation) verified against local dev data. Not verified: real browser
 interaction.
 
-**Exit criteria:** you personally track your own coursework with it for a full week.
-
-## Phase 2 — Gradebook & GPA (Weeks 6–8) — *Module B*
-- [ ] Grade categories with custom weighting, live computed course grade
-- [ ] GPA calculation (configurable scale)
-- [ ] What-if scenario tester, drop-lowest-N, extra credit, curve adjustment
-- [ ] (Degree/prerequisite blueprint deferred to Phase 9)
-
 ## Phase 3 — Polish & First Real Users (Weeks 9–10)
-- [ ] Onboarding flow, empty states, dark mode + themes
-- [ ] Due-date email digests (Resend)
-- [ ] Get 10–20 real students using it — reprioritize everything below based on their feedback
+- [x] Onboarding — brand-new users (zero courses, zero assignments) see a welcome card on
+      `/dashboard` instead of a sparse empty view, with both paths (quick-add now, or add a
+      course for grades) spelled out
+- [x] Empty states — consistency pass across courses/grades/calendar/dashboard, each one now
+      says what to do next rather than just "nothing here"
+- [x] Dark mode — `next-themes` (light/dark/system), toggle in `AppNav`. The `.dark` CSS
+      variables already existed from the shadcn scaffold; this just wires up the switch,
+      persistence, and no-flash-on-load. Clerk's own widgets (sign-in/up forms, UserButton
+      popover) aren't reskinned for dark mode — that needs `@clerk/ui`'s shadcn theme, deferred
+      as a separate concern from "does the app have dark mode"
+- [ ] Due-date email digests (Resend) — **blocked, needs a `RESEND_API_KEY` nobody has provided**.
+      Not building speculative code around a credential that doesn't exist yet
+- [ ] Get 10–20 real students using it — **not achievable autonomously**, this is a you-and-time
+      step, not a code step. Everything after this point in the original plan was meant to be
+      reprioritized based on that feedback; proceeding through Phase 4/5/7 anyway on the
+      loop-while-away instruction, but real user feedback should still reorder what happens next
+      once you're back
 
 ## Phase 4 — Gamification (Weeks 11–12) — *Module H*
 - [ ] XP & level progression

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
 import { CalendarDays, ListChecks, Home, GraduationCap } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const links = [
   { href: "/dashboard", label: "Today", icon: Home },
@@ -27,7 +28,8 @@ export function AppNav() {
               <span className="hidden sm:inline">{label}</span>
             </Link>
           ))}
-          <div className="ml-2">
+          <div className="ml-2 flex items-center gap-1">
+            <ThemeToggle />
             <UserButton />
           </div>
         </nav>

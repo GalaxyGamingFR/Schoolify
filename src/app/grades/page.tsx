@@ -32,11 +32,15 @@ export default async function GradesOverviewPage() {
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold tracking-tight">Grades</h1>
-          {gpa !== null && (
+          {gpa !== null ? (
             <div className="text-right">
               <p className="text-2xl font-semibold">{gpa.toFixed(2)}</p>
               <p className="text-sm text-muted-foreground">GPA (unweighted, 4.0 scale)</p>
             </div>
+          ) : (
+            courses.length > 0 && (
+              <p className="text-sm text-muted-foreground">No grades recorded yet</p>
+            )
           )}
         </div>
 

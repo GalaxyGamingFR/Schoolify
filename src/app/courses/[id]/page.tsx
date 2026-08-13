@@ -52,7 +52,9 @@ export default async function CourseDetailPage({
 
         <div className="mt-6 space-y-2">
           {course.assignments.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No assignments yet.</p>
+            <p className="text-sm text-muted-foreground">
+              No assignments yet — add one above.
+            </p>
           ) : (
             course.assignments.map((a) => (
               <AssignmentRow

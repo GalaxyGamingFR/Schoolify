@@ -1,10 +1,14 @@
+import Link from "next/link";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { addDays, endOfDay, isBefore, isToday, startOfDay } from "date-fns";
 import { AppNav } from "@/components/app-nav";
 import { QuickAddForm } from "@/components/quick-add-form";
 import { AssignmentRow } from "@/components/assignment-row";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/prisma";
+import { BookPlus } from "lucide-react";
 
 export default async function DashboardPage() {
   const clerkUser = await currentUser();
@@ -27,6 +31,12 @@ export default async function DashboardPage() {
       </div>
     );
   }
+
+  const [courseCount, totalAssignmentCount] = await Promise.all([
+    prisma.course.count({ where: { enrollments: { some: { studentId: dbUser.id } } } }),
+    prisma.assignment.count({ where: { userId: dbUser.id } }),
+  ]);
+  const isNewUser = courseCount === 0 && totalAssignmentCount === 0;
 
   const today = startOfDay(new Date());
   const windowEnd = endOfDay(addDays(today, 7));
@@ -53,6 +63,38 @@ export default async function DashboardPage() {
         <h1 className="text-2xl font-semibold tracking-tight">
           Hey {clerkUser.firstName ?? "there"}
         </h1>
+
+        {isNewUser && (
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Welcome to Schoolify</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm text-muted-foreground">
+              <p>Two ways to get going:</p>
+              <ul className="list-disc space-y-1 pl-5">
+                <li>
+                  Type a task into the box below and hit Enter — no setup needed, it&apos;ll show
+                  up here today.
+                </li>
+                <li>
+                  Add your classes under{" "}
+                  <Link href="/courses" className="font-medium text-foreground underline">
+                    Courses
+                  </Link>{" "}
+                  to also track grades and organize assignments by class.
+                </li>
+              </ul>
+              <Button
+                size="sm"
+                render={
+                  <Link href="/courses">
+                    <BookPlus className="size-4" /> Add your first course
+                  </Link>
+                }
+              />
+            </CardContent>
+          </Card>
+        )}
 
         <div className="mt-6">
           <QuickAddForm />
