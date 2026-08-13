@@ -56,19 +56,34 @@ Goal: a deployed, logged-in, empty app. Live at
 Postgres. Verified for real: triggered a live `user.updated` event via the Clerk API and confirmed
 it created the `User` row in the *production* Supabase database (not just locally).
 
-**Still running on Clerk dev-instance keys** — usable, but Clerk shows a "development" banner and
-enforces stricter usage limits. Run `clerk deploy` (needs an interactive terminal — see chat) to
-get a real production instance and production keys, then update the Vercel env vars and redeploy.
+Now running on a real Clerk **production** instance at `tariqkhalif.me` (DNS/SSL/mail verified,
+Google + Discord OAuth) with its own webhook endpoint and signing secret — no longer on dev keys.
 
 ## Phase 1 — Task & Calendar Core (Weeks 2–5) — *Module A*
 The MVP. Proves the "makes school easier" premise.
 
-- [ ] Course CRUD (manual entry)
-- [ ] Assignment CRUD (type, due date, priority, estimated time)
-- [ ] Calendar: month / week / day views
-- [ ] "Today" dashboard (default landing view)
-- [ ] Quick-add flow — log a task in under 3 clicks
-- [ ] Mobile-first pass (test at 375px before desktop)
+- [x] Schema: `Assignment.userId` (direct ownership) + `courseId` made optional, so quick-add can
+      create an uncategorized task — categorize into a course later from `/courses`. Also fixed
+      `Enrollment`/`GradeCategory` → `Course` to `onDelete: Cascade` (Prisma's RESTRICT default
+      would have blocked deleting a course with an enrollment)
+- [x] Course CRUD — `/courses` (list + create), `/courses/[id]` (detail, add/delete assignments,
+      delete course). Ownership enforced via `Enrollment`, no separate permission lookup needed
+- [x] Assignment CRUD (type, due date, priority, estimated time) — full form on the course detail
+      page; toggle done / delete from any list via `AssignmentRow`
+- [x] Calendar: month / week / day views at `/calendar?view=...&date=...` — one query-range
+      function shared across all three, month view links each day into day view
+- [x] "Today" dashboard (`/dashboard`) — overdue / due-today / next-7-days, quick-add at the top
+- [x] Quick-add flow — title + Enter, due date defaults to today, course defaults to none
+- [ ] Mobile-first pass (test at 375px before desktop) — followed mobile-first Tailwind
+      conventions throughout (flex-wrap, `hidden sm:` for secondary text, `truncate`,
+      single-column-first grids), but **not visually verified** — no live browser access in this
+      session. Worth a real spot-check on a phone.
+
+**Verified:** lint clean, full production build clean, and the actual Prisma operations behind
+every action (create course+enrollment, quick-add, full create, dashboard query, course-list
+counts, ownership-scoped update, cross-user update correctly matching zero rows, cascade-delete
+nulling `courseId` instead of erroring) run end-to-end against local dev data with the expected
+results. Not verified: real browser interaction (forms, clicks, calendar navigation).
 
 **Exit criteria:** you personally track your own coursework with it for a full week.
 

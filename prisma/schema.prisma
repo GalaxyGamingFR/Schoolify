@@ -62,6 +62,7 @@ model User {
 
   // Student-side relations
   enrollments      Enrollment[]
+  assignments      Assignment[]
   calendarEvents   CalendarEvent[]
   guardiansOfMe    Guardianship[]   @relation("StudentGuardianships")
 
@@ -126,7 +127,7 @@ model Enrollment {
   id        String   @id @default(cuid())
   student   User     @relation(fields: [studentId], references: [id])
   studentId String
-  course    Course   @relation(fields: [courseId], references: [id])
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   courseId  String
   createdAt DateTime @default(now())
 
@@ -136,8 +137,12 @@ model Enrollment {
 
 model Assignment {
   id               String           @id @default(cuid())
-  course           Course           @relation(fields: [courseId], references: [id])
-  courseId         String
+  user             User             @relation(fields: [userId], references: [id])
+  userId           String
+  // Optional so quick-add can create an uncategorized task and the student
+  // triages it into a course later — see roadmap.md Phase 1 quick-add flow.
+  course           Course?          @relation(fields: [courseId], references: [id])
+  courseId         String?
   title            String
   type             AssignmentType   @default(OTHER)
   status           AssignmentStatus @default(NOT_STARTED)
@@ -149,12 +154,13 @@ model Assignment {
 
   gradeEntries GradeEntry[]
 
-  @@index([courseId, dueAt])
+  @@index([userId, dueAt])
+  @@index([courseId])
 }
 
 model GradeCategory {
   id           String   @id @default(cuid())
-  course       Course   @relation(fields: [courseId], references: [id])
+  course       Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   courseId     String
   name         String // e.g. "Exams"
   weight       Float // percentage points, e.g. 40 for 40%
