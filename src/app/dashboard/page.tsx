@@ -34,8 +34,8 @@ export default async function DashboardPage() {
             </>
           ) : (
             <p>
-              Waiting on the Clerk webhook to sync your account — this fills in
-              automatically once <code>CLERK_WEBHOOK_SECRET</code> is configured.
+              Waiting on the Clerk webhook to sync your account — this happens automatically
+              within a few seconds. Refresh in a moment.
             </p>
           )}
           <p className="pt-4">
