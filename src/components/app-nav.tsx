@@ -69,13 +69,22 @@ export async function AppNav() {
         </Link>
         <nav className="flex items-center gap-1">
           {isParent ? (
-            <Link
-              href="/parent"
-              className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
-            >
-              <Users className="size-4" />
-              <span className="hidden sm:inline">Your students</span>
-            </Link>
+            <>
+              <Link
+                href="/parent"
+                className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+              >
+                <Users className="size-4" />
+                <span className="hidden sm:inline">Your students</span>
+              </Link>
+              <Link
+                href="/messages"
+                className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+              >
+                <MessageSquare className="size-4" />
+                <span className="hidden sm:inline">Messages</span>
+              </Link>
+            </>
           ) : (
             <>
               {primaryLinks.map(({ href, label, icon: Icon }) => (

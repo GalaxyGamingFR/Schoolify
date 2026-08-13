@@ -12,6 +12,7 @@ import { AppNav } from "@/components/app-nav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle, ArrowLeft, Flame, TrendingDown } from "lucide-react";
 import { RemoveGuardianshipButton } from "@/components/remove-guardianship-button";
+import { MessageUserButton } from "@/components/message-user-button";
 
 const TREND_WINDOW_DAYS = 14;
 
@@ -97,7 +98,10 @@ export default async function ParentStudentPage({
 
         <div className="mt-2 flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight">{student.name}</h1>
-          <RemoveGuardianshipButton guardianshipId={guardianship.id} />
+          <div className="flex items-center gap-2">
+            <MessageUserButton userId={student.id} label={`Message ${student.name.split(" ")[0]}`} />
+            <RemoveGuardianshipButton guardianshipId={guardianship.id} />
+          </div>
         </div>
 
         {alerts.length > 0 && (

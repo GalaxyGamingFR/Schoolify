@@ -81,7 +81,8 @@ export default async function MessagesPage() {
           />
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
-          You can only message classmates or your teacher — not open to anyone platform-wide.
+          You can only message classmates, your teacher, or a linked guardian — not open to
+          anyone platform-wide.
         </p>
 
         <div className="mt-6 space-y-2">
