@@ -1,0 +1,189 @@
+// Schoolify data model — Phase 0.
+// Modeled for all four roles (Student/Parent/Teacher/Admin) even though only
+// Student paths are implemented through Phase 1-5. See roadmap.md Part 2.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  PARENT
+  TEACHER
+  ADMIN
+}
+
+enum GuardianshipStatus {
+  PENDING
+  ACCEPTED
+}
+
+enum AssignmentType {
+  READING
+  PROJECT
+  ESSAY
+  EXAM
+  QUIZ
+  LAB
+  HOMEWORK
+  OTHER
+}
+
+enum AssignmentStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  DONE
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model User {
+  id          String   @id @default(cuid())
+  clerkId     String   @unique
+  email       String   @unique
+  name        String
+  role        Role     @default(STUDENT)
+  dateOfBirth DateTime? // drives COPPA gating (Phase 6)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Student-side relations
+  enrollments      Enrollment[]
+  calendarEvents   CalendarEvent[]
+  guardiansOfMe    Guardianship[]   @relation("StudentGuardianships")
+
+  // Parent-side relations
+  studentsIGuard   Guardianship[]   @relation("ParentGuardianships")
+
+  @@index([role])
+}
+
+model Guardianship {
+  id        String             @id @default(cuid())
+  parent    User               @relation("ParentGuardianships", fields: [parentId], references: [id])
+  parentId  String
+  student   User               @relation("StudentGuardianships", fields: [studentId], references: [id])
+  studentId String
+  status    GuardianshipStatus @default(PENDING)
+  createdAt DateTime           @default(now())
+
+  @@unique([parentId, studentId])
+  @@index([studentId])
+}
+
+model School {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+
+  terms   Term[]
+  courses Course[]
+}
+
+model Term {
+  id        String   @id @default(cuid())
+  school    School   @relation(fields: [schoolId], references: [id])
+  schoolId  String
+  name      String // e.g. "Fall 2026"
+  startDate DateTime
+  endDate   DateTime
+
+  courses Course[]
+
+  @@index([schoolId])
+}
+
+model Course {
+  id        String   @id @default(cuid())
+  school    School?  @relation(fields: [schoolId], references: [id])
+  schoolId  String?
+  term      Term?    @relation(fields: [termId], references: [id])
+  termId    String?
+  name      String
+  createdAt DateTime @default(now())
+
+  enrollments    Enrollment[]
+  assignments    Assignment[]
+  gradeCategories GradeCategory[]
+
+  @@index([termId])
+}
+
+model Enrollment {
+  id        String   @id @default(cuid())
+  student   User     @relation(fields: [studentId], references: [id])
+  studentId String
+  course    Course   @relation(fields: [courseId], references: [id])
+  courseId  String
+  createdAt DateTime @default(now())
+
+  @@unique([studentId, courseId])
+  @@index([courseId])
+}
+
+model Assignment {
+  id               String           @id @default(cuid())
+  course           Course           @relation(fields: [courseId], references: [id])
+  courseId         String
+  title            String
+  type             AssignmentType   @default(OTHER)
+  status           AssignmentStatus @default(NOT_STARTED)
+  priority         Priority         @default(MEDIUM)
+  dueAt            DateTime
+  estimatedMinutes Int?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  gradeEntries GradeEntry[]
+
+  @@index([courseId, dueAt])
+}
+
+model GradeCategory {
+  id           String   @id @default(cuid())
+  course       Course   @relation(fields: [courseId], references: [id])
+  courseId     String
+  name         String // e.g. "Exams"
+  weight       Float // percentage points, e.g. 40 for 40%
+  dropLowestN  Int      @default(0)
+
+  gradeEntries GradeEntry[]
+
+  @@index([courseId])
+}
+
+model GradeEntry {
+  id           String         @id @default(cuid())
+  category     GradeCategory  @relation(fields: [categoryId], references: [id])
+  categoryId   String
+  assignment   Assignment?    @relation(fields: [assignmentId], references: [id])
+  assignmentId String?
+  label        String
+  pointsEarned Float
+  pointsPossible Float
+  createdAt    DateTime       @default(now())
+
+  @@index([categoryId])
+}
+
+model CalendarEvent {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  title     String
+  startsAt  DateTime
+  endsAt    DateTime?
+  location  String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, startsAt])
+}
