@@ -33,7 +33,7 @@ export default async function CoursesPage() {
     <div className="flex flex-1 flex-col">
       <AppNav />
       <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8">
-        <h1 className="text-2xl font-semibold tracking-tight">Courses</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Courses</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Add each class you&apos;re taking, then track assignments under it. Have a join code from
           a teacher? Enter it below instead.

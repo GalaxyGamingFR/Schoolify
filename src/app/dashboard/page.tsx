@@ -104,7 +104,7 @@ export default async function DashboardPage() {
     <div className="flex flex-1 flex-col">
       <AppNav />
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8">
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="text-3xl font-bold tracking-tight">
           Hey {clerkUser.firstName ?? "there"}
         </h1>
 
@@ -136,6 +136,7 @@ export default async function DashboardPage() {
               </ul>
               <Button
                 size="sm"
+                variant="secondary"
                 render={
                   <Link href="/courses">
                     <BookPlus className="size-4" /> Add your first course
@@ -183,7 +184,9 @@ function Section({
       <h2 className="text-sm font-semibold text-muted-foreground">{title}</h2>
       <div className="mt-2 space-y-2">
         {assignments.length === 0 && empty ? (
-          <p className="text-sm text-muted-foreground">{empty}</p>
+          <div className="rounded-lg border border-dashed border-border/80 p-8 text-center">
+            <p className="text-sm text-muted-foreground">{empty}</p>
+          </div>
         ) : (
           assignments.map((a) => (
             <AssignmentRow

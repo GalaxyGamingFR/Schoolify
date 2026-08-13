@@ -90,7 +90,7 @@ export default async function ParentStudentPage({
         </Link>
 
         <div className="mt-2 flex items-center justify-between">
-          <h1 className="text-2xl font-semibold tracking-tight">{student.name}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{student.name}</h1>
           <RemoveGuardianshipButton guardianshipId={guardianship.id} />
         </div>
 

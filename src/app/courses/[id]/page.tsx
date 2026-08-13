@@ -32,7 +32,7 @@ export default async function CourseDetailPage({
       <AppNav />
       <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold tracking-tight">{course.name}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{course.name}</h1>
           <div className="flex items-center gap-1">
             {course.teacherId && <ClassChatButton courseId={course.id} />}
             <Button

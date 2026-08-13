@@ -47,7 +47,7 @@ export default async function SchoolDetailPage({
           <ArrowLeft className="size-4" /> Schools
         </Link>
 
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight">{school.name}</h1>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight">{school.name}</h1>
         <p className="text-sm text-muted-foreground">{school.domain}</p>
 
         <h2 className="mt-8 text-sm font-semibold text-muted-foreground">

@@ -36,7 +36,7 @@ export default async function PortfolioPage() {
       <AppNav />
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold tracking-tight">Portfolio</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Portfolio</h1>
           {activities.length > 0 && (
             <Button
               variant="outline"

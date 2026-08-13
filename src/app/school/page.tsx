@@ -27,7 +27,7 @@ export default async function SchoolHubPage() {
     <div className="flex flex-1 flex-col">
       <AppNav />
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8">
-        <h1 className="text-2xl font-semibold tracking-tight">Schools</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Schools</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           For principals and teachers — register a school, invite staff, and create classes
           students join with their school email.

@@ -36,10 +36,10 @@ export function JoinCourseForm() {
           name="code"
           placeholder="Class join code"
           disabled={isPending}
-          className="uppercase"
+          className="h-auto rounded-xl py-3 px-4 text-base uppercase"
           maxLength={6}
         />
-        <Button type="submit" variant="outline" disabled={isPending}>
+        <Button type="submit" variant="secondary" disabled={isPending} className="h-auto rounded-xl px-4">
           Join
         </Button>
       </div>

@@ -39,7 +39,7 @@ export default async function ProgressPage() {
     <div className="flex flex-1 flex-col">
       <AppNav />
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8">
-        <h1 className="text-2xl font-semibold tracking-tight">Progress</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Progress</h1>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           <Card>

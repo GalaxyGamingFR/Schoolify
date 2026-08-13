@@ -50,7 +50,7 @@ export default async function NewConversationPage() {
     <div className="flex flex-1 flex-col">
       <AppNav />
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8">
-        <h1 className="text-2xl font-semibold tracking-tight">New message</h1>
+        <h1 className="text-3xl font-bold tracking-tight">New message</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Pick one person for a direct message, or several for a group chat.
         </p>

@@ -26,15 +26,23 @@ export function QuickAddForm() {
           router.refresh();
         });
       }}
-      className="flex gap-2"
+      className="relative"
     >
       <Input
         name="title"
         placeholder="Add a task for today — press Enter"
         disabled={isPending}
         autoFocus
+        className="h-auto rounded-xl py-3 pr-11 pl-4 text-base"
       />
-      <Button type="submit" disabled={isPending} size="icon" aria-label="Add task">
+      <Button
+        type="submit"
+        disabled={isPending}
+        size="icon-sm"
+        variant="ghost"
+        aria-label="Add task"
+        className="absolute top-1/2 right-1.5 -translate-y-1/2"
+      >
         <Plus />
       </Button>
     </form>

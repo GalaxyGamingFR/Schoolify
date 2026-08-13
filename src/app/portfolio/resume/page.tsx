@@ -30,7 +30,7 @@ export default async function ResumePage() {
         </div>
 
         <div className="mt-6 print:mt-0">
-          <h1 className="text-2xl font-semibold tracking-tight">{user.name}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{user.name}</h1>
           <p className="text-sm text-muted-foreground">{user.email}</p>
 
           {activities.length === 0 ? (

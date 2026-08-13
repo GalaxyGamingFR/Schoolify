@@ -24,7 +24,7 @@ export default async function DegreePage() {
     <div className="flex flex-1 flex-col">
       <AppNav />
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8">
-        <h1 className="text-2xl font-semibold tracking-tight">Degree plan</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Degree plan</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Your own custom requirement list — not tied to any specific institution&apos;s official
           curriculum, since we don&apos;t have that data. Add what your program actually requires

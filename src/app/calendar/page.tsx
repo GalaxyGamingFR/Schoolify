@@ -78,7 +78,7 @@ export default async function CalendarPage({
       <AppNav />
       <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="text-3xl font-bold tracking-tight">
             {view === "day"
               ? format(date, "EEEE, MMMM d")
               : view === "week"

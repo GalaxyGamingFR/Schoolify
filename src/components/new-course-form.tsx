@@ -21,10 +21,22 @@ export function NewCourseForm() {
           formRef.current?.reset();
         });
       }}
-      className="flex gap-2"
+      className="relative"
     >
-      <Input name="name" placeholder="Add a course, e.g. AP Biology" disabled={isPending} />
-      <Button type="submit" disabled={isPending} size="icon" aria-label="Add course">
+      <Input
+        name="name"
+        placeholder="Add a course, e.g. AP Biology"
+        disabled={isPending}
+        className="h-auto rounded-xl py-3 pr-11 pl-4 text-base"
+      />
+      <Button
+        type="submit"
+        disabled={isPending}
+        size="icon-sm"
+        variant="ghost"
+        aria-label="Add course"
+        className="absolute top-1/2 right-1.5 -translate-y-1/2"
+      >
         <Plus />
       </Button>
     </form>

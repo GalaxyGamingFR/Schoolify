@@ -26,7 +26,7 @@ export default async function ParentPortalPage() {
     <div className="flex flex-1 flex-col">
       <AppNav />
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8">
-        <h1 className="text-2xl font-semibold tracking-tight">Your students</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Your students</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           A high-level view of each linked student&apos;s academic health — grades, upcoming
           deadlines, and streaks. Day-to-day assignment detail stays theirs.
