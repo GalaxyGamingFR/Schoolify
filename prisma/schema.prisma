@@ -57,6 +57,10 @@ model User {
   name        String
   role        Role     @default(STUDENT)
   dateOfBirth DateTime? // drives COPPA gating (Phase 6)
+  // Null until the role-picker + (for students) date-of-birth step is
+  // completed. The dashboard is the single choke point that checks this —
+  // see roadmap.md Phase 6 — rather than every route re-checking it.
+  onboardingCompletedAt DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -68,6 +72,10 @@ model User {
 
   // Parent-side relations
   studentsIGuard   Guardianship[]   @relation("ParentGuardianships")
+
+  // School-staff relations
+  taughtCourses    Course[]         @relation("TaughtCourses")
+  schoolStaffRoles SchoolStaff[]
 
   @@index([role])
 }
@@ -88,10 +96,49 @@ model Guardianship {
 model School {
   id        String   @id @default(cuid())
   name      String
+  // Lowercase, no leading "@" (e.g. "lincolnhigh.edu"). Gates both staff
+  // invites and student self-join: an account's own (Clerk-verified) email
+  // must share this domain. See roadmap.md's school-onboarding phase for
+  // why this is real verification of *an* inbox at the domain, not proof of
+  // institutional authorization — that still needs a manual process.
+  domain    String   @unique
   createdAt DateTime @default(now())
 
   terms   Term[]
   courses Course[]
+  staff   SchoolStaff[]
+}
+
+enum SchoolRole {
+  PRINCIPAL
+  TEACHER
+}
+
+enum StaffStatus {
+  INVITED
+  ACTIVE
+}
+
+// A person's staff membership at one school. Deliberately separate from the
+// global User.role (STUDENT/PARENT/TEACHER/ADMIN) rather than overloading
+// it — someone can run a school and still use their own Student/Parent
+// dashboard, so "am I school staff" shouldn't force a choice at onboarding.
+model SchoolStaff {
+  id        String      @id @default(cuid())
+  school    School      @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  schoolId  String
+  // Null until the invited email actually signs in and gets claimed
+  // (claimSchoolInvites) — an invite can be sent to someone without a
+  // Schoolify account yet.
+  user      User?       @relation(fields: [userId], references: [id])
+  userId    String?
+  email     String // lowercase-normalized; the claim key for INVITED rows
+  role      SchoolRole
+  status    StaffStatus @default(ACTIVE)
+  createdAt DateTime    @default(now())
+
+  @@unique([schoolId, email])
+  @@index([userId])
 }
 
 model Term {
@@ -116,11 +163,23 @@ model Course {
   name      String
   createdAt DateTime @default(now())
 
+  // Set only for school-managed courses (a teacher created it under a
+  // School) — null means a student's own self-tracked course, same as
+  // every course before this phase. Ownership checks in courses.ts branch
+  // on this: a self-tracked course is owned by any enrolled student (as
+  // before), a school-managed one only by its teacher.
+  teacher   User?    @relation("TaughtCourses", fields: [teacherId], references: [id])
+  teacherId String?
+  // Set only alongside teacherId — students self-join with this code,
+  // gated on their own email domain matching the School's.
+  joinCode  String?  @unique
+
   enrollments    Enrollment[]
   assignments    Assignment[]
   gradeCategories GradeCategory[]
 
   @@index([termId])
+  @@index([teacherId])
 }
 
 model Enrollment {

@@ -5,10 +5,13 @@ import { addDays, endOfDay, isBefore, isToday, startOfDay } from "date-fns";
 import { AppNav } from "@/components/app-nav";
 import { QuickAddForm } from "@/components/quick-add-form";
 import { AssignmentRow } from "@/components/assignment-row";
+import { GuardianRequestsCard } from "@/components/guardian-requests-card";
+import { InviteGuardianForm } from "@/components/invite-guardian-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/prisma";
-import { BookPlus } from "lucide-react";
+import { needsGuardianVerification } from "@/lib/coppa";
+import { BookPlus, ShieldAlert } from "lucide-react";
 
 export default async function DashboardPage() {
   const clerkUser = await currentUser();
@@ -27,6 +30,47 @@ export default async function DashboardPage() {
             Waiting on the Clerk webhook to sync your account — this happens automatically
             within a few seconds. Refresh in a moment.
           </p>
+        </main>
+      </div>
+    );
+  }
+
+  if (!dbUser.onboardingCompletedAt) redirect("/onboarding");
+  if (dbUser.role === "PARENT") redirect("/parent");
+
+  const guardianships = await prisma.guardianship.findMany({
+    where: { studentId: dbUser.id },
+    include: { parent: { select: { name: true, email: true } } },
+  });
+  const pendingRequests = guardianships
+    .filter((g) => g.status === "PENDING")
+    .map((g) => ({ id: g.id, parentName: g.parent.name, parentEmail: g.parent.email }));
+  const hasAcceptedGuardian = guardianships.some((g) => g.status === "ACCEPTED");
+
+  // See src/lib/coppa.ts — this is a UI gate, not real COPPA Verifiable
+  // Parental Consent. It only stops a plain accidental self-signup by a
+  // young student from landing on the full app unsupervised.
+  if (needsGuardianVerification({ role: dbUser.role, dateOfBirth: dbUser.dateOfBirth, hasAcceptedGuardian })) {
+    return (
+      <div className="flex flex-1 flex-col">
+        <AppNav />
+        <main className="mx-auto w-full max-w-md flex-1 px-4 py-16">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <ShieldAlert className="size-5" /> Parent or guardian needed
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 text-sm text-muted-foreground">
+              <p>
+                Because of your age, a parent or guardian needs to link their Schoolify account
+                before you can use the app. If they already have one, send them an invite below —
+                if not, ask them to sign up first.
+              </p>
+              <InviteGuardianForm />
+              {pendingRequests.length > 0 && <GuardianRequestsCard requests={pendingRequests} />}
+            </CardContent>
+          </Card>
         </main>
       </div>
     );
@@ -63,6 +107,12 @@ export default async function DashboardPage() {
         <h1 className="text-2xl font-semibold tracking-tight">
           Hey {clerkUser.firstName ?? "there"}
         </h1>
+
+        {pendingRequests.length > 0 && (
+          <div className="mt-6">
+            <GuardianRequestsCard requests={pendingRequests} />
+          </div>
+        )}
 
         {isNewUser && (
           <Card className="mt-6">

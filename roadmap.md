@@ -191,10 +191,109 @@ The nav bar was flagged here as getting crowded (6 items) — addressed in Phase
 item made it actually necessary, not preemptively.
 
 ## Phase 6 — Parent Portal (Weeks 15–17) — *Module G*
-- [ ] Parent role, invite/link flow, guardianship acceptance gate
-- [ ] Scoped read-only views (high-level academic health only)
-- [ ] Weekly progress emails
-- [ ] Under-13 signup path (parent-first onboarding, COPPA)
+- [x] Onboarding step — `/onboarding`, gated at the one universal post-signup landing point
+      (`/dashboard`, since Clerk's fallback redirect always sends new users there regardless of
+      eventual role). Role picker (Student/Parent) plus date-of-birth for students only — a
+      parent's own age isn't what COPPA cares about, nothing to gate on for them. Sets
+      `User.onboardingCompletedAt`; no other route re-checks it, matching the "one choke point"
+      approach used for auth elsewhere in this app
+- [x] Parent role, invite/link flow, guardianship acceptance gate — reuses the `Guardianship`
+      model from Phase 0 as-is (no schema change beyond `onboardingCompletedAt`). Acceptance
+      authority always sits with the student, regardless of who initiated the link, since it's
+      their data being shared — a parent-initiated request (`requestStudentLink`) stays `PENDING`
+      until the student accepts/declines it; a student-initiated invite (`inviteGuardian`)
+      auto-accepts, since inviting *is* the consent in that direction. Both actions look the
+      target up by email (`findUserByEmail`) — there's no invite-a-not-yet-registered-email flow,
+      matching the "don't build speculative infra" pattern; the error message says so plainly
+- [x] Scoped read-only views — `/parent` (linked students, pending requests, link-a-student form)
+      and `/parent/[studentId]` (GPA, per-course grades, next-7-days deadlines, streak/level,
+      low-grade/trending-down risk alerts). Deliberately excludes: individual grade entries,
+      full assignment list/detail, quick-add, what-if calculator, and the "heavy week" workload
+      alert — those are the "invading student study privacy" side of Module G's own framing,
+      not the "transparent grade/due-date updates" side. Enforced via the existing
+      `canAccessStudentData` permission check (unchanged from Phase 0), re-verified against local
+      dev data this phase
+- [ ] Weekly progress emails — **blocked, same as Phase 3's due-date digests**: still no
+      `RESEND_API_KEY`. Not building speculative code around a credential that doesn't exist yet
+- [x]/[ ] Under-13 signup path — **the technical gate is built, real COPPA compliance is not.**
+      `src/lib/coppa.ts` computes age and blocks a `STUDENT` account under 13 from the normal
+      dashboard until an `ACCEPTED` guardianship exists, showing a "link a parent" screen instead
+      (`needsGuardianVerification`). This is a UI speed bump, **not Verifiable Parental Consent**
+      under the FTC's COPPA Rule — an accepted Guardianship only proves some adult clicked
+      "accept," not that they're the child's actual parent, and the gate only guards the
+      `/dashboard` entry point, not every route a determined user could type in directly (a real
+      defense-in-depth version would need every self-access query routed through a permission
+      check the way parent-access queries already are — a bigger refactor than this phase's
+      scope). Real VPC (credit card charge, signed form, ID verification service) is a legal/
+      business decision nobody has made yet — see Compliance & Safety below
+
+Nav: `AppNav` became a self-contained async server component (fetches its own current user) so
+existing `<AppNav />` call sites in every page didn't need to start threading role through props;
+it now renders a minimal "Your students" link instead of the student nav when `role === "PARENT"`.
+
+**Verified:** lint and build clean. Hand-calculated test suite for `coppa.ts` (age at/before/after
+a birthday, the under-13 gate's four branches) passes against the actual module — caught a real
+bug during verification: `calculateAge` originally compared `now.getMonth()`/`getDate()` (local
+time) against a bare `"YYYY-MM-DD"` date-of-birth string parsed as UTC midnight (per spec), which
+on a server west of UTC reads back one calendar day earlier than intended — the same class of bug
+already hit once in Phase 4's streak math. Fixed by using UTC accessors consistently on both sides
+instead of mixing local/UTC reads. Guardianship flow (PENDING blocks access, ACCEPTED grants it,
+an unrelated parent stays denied, the `@@unique([parentId, studentId])` constraint rejects a
+duplicate invite) verified end-to-end against local dev data via real Prisma operations. Not
+verified: real browser interaction.
+
+## Phase 6.5 — School Accounts: Principal/Teacher/Roster (added, not in the original plan)
+Not one of the original Module A–H phases — added mid-stream so a school can actually onboard
+onto Schoolify as an institution: a principal registers the school, invites teachers, teachers
+run classes, students join with their school email.
+
+- [x] School registration — `/school`. Any signed-in user can register a `School{name, domain}`;
+      the registrant becomes its `PRINCIPAL`. Gate: their own account email's domain must match
+      the domain being registered. **Scope decision:** this is deliberately not a new
+      email-verification subsystem — it reuses the fact that `User.email` already went through
+      Clerk's own sign-up verification (OTP/magic-link) before the row was ever created, the same
+      insight that avoids re-hitting Phase 3's "blocked on `RESEND_API_KEY`" wall. It proves the
+      registrant controls *an* inbox at that domain, not that they're formally authorized to
+      represent the institution — see Compliance & Safety below
+- [x] Principal manages teachers — `/school/[id]`. Invite by email (must match the school's
+      domain); if that email already has a Schoolify account the `SchoolStaff` row is `ACTIVE`
+      immediately, otherwise it sits `INVITED` (`userId` null) until claimed. `claimSchoolInvites`
+      runs on every `/school` load and reconciles any `INVITED` row matching the current user's
+      email — so an invite sent before someone signs up still resolves the first time they show
+      up. Principal can remove staff; blocked from removing the last active principal so a school
+      can't end up orphaned
+- [x] Teachers create classes with a join code — `createSchoolCourse` makes a normal `Course` row
+      (schema: `Course.teacherId`, `Course.joinCode`) rather than a parallel model, so every
+      existing course-detail/assignment/grade page works on a school-managed course for free. Join
+      code is 6 characters from an ambiguity-free alphabet (no `0/O/1/I`), regenerable by the
+      teacher or a principal
+- [x] Students join with their school email — `joinCourseByCode` on `/courses` checks the
+      student's own account-email domain against the course's school domain
+      (`matchesSchoolDomain`) before creating the `Enrollment`; same Clerk-verification reuse as
+      registration, "actually verified" without new email infra
+- [x] **Real bug caught and fixed while building this:** `renameCourse`/`deleteCourse`
+      (`src/lib/actions/courses.ts`) originally granted ownership to *any* enrolled student — fine
+      when every course was self-tracked (the enrolled student was definitionally the only owner),
+      but wrong the moment a teacher-owned course with multiple enrolled students existed: any
+      classmate could have renamed or deleted the whole class's course out from under everyone
+      else. Fixed with a shared `ownershipWhere()` that only grants a school-managed course
+      (`teacherId` set) to its teacher, while self-tracked courses (`teacherId` null) keep the
+      original any-enrolled-student rule
+- [ ] Teacher-authored gradebook entry — **not built.** A school-managed course a student joins
+      still uses the same self-tracked `GradeCategory`/`GradeEntry` flow as before — the student
+      enters their own scores, same as any personal course. Real teacher-entered grading is a
+      separate ownership model (who can write a `GradeEntry` for *someone else's* `Assignment`)
+      big enough to be its own pass, not a corner to cut into this one. The course page says so
+      explicitly so a parent viewing it isn't misled into thinking it's official school data yet
+
+**Verified:** lint and build clean. Hand-calculated suite for `src/lib/school.ts` (domain
+normalization/matching including case-insensitivity and a same-suffix-different-domain
+false-positive check, join-code alphabet/length, and a 1000-draw uniqueness sanity check) passes.
+End-to-end Prisma verification against local dev data: duplicate school domain rejected, a teacher
+invite auto-claims on matching email, duplicate join codes and duplicate enrollments rejected by
+their unique constraints, an in-domain student's join succeeds — and, specifically re-testing the
+bug above, an enrolled-but-not-teaching classmate is denied a rename while the actual teacher and
+a self-tracked course's own student both still succeed. Not verified: real browser interaction.
 
 ## Phase 7 — Competitions & Opportunity Hub (Weeks 18–20) — *Module C*
 - [x] Manually curated opportunity directory — `/opportunities`, 47 entries (target was ~50;
@@ -256,9 +355,26 @@ Last on purpose — most expensive module, most risk.
 
 ## Compliance & Safety (cross-cutting, not a phase)
 
-- [ ] Signup gated at 13+ through Phase 5; under-13 opens in Phase 6 via parent-first flow
-- [ ] `dateOfBirth` collected from day one (Phase 0 schema) to make that gating possible later
+- [x] Signup gated at 13+ through Phase 5 (no DOB was ever collected, so there was no way to
+      onboard as under-13 in the first place — the gate was implicit); Phase 6 adds the explicit
+      DOB-based gate described above
+- [x] `dateOfBirth` collected from day one (Phase 0 schema); now actually gathered via the Phase 6
+      onboarding step
+- [ ] **Real COPPA Verifiable Parental Consent — not done, needs a human decision.** Phase 6's
+      guardian-link gate (`src/lib/coppa.ts`) is a UI speed bump modeled on the FTC's requirement,
+      not a certified VPC method. Before any real under-13 user is allowed to actually use the
+      app (as opposed to a developer testing the flow), someone needs to pick a real VPC method
+      (credit card charge, signed consent form, ID verification service, etc.) and that's a
+      legal/business decision, not a code change — same category as Phase 7's "native
+      competitions need real product decisions"
 - [ ] FERPA review before signing any school as a customer or building LMS integrations (Phase 10)
+- [ ] **School-registration domain check is not institutional verification.** Phase 6.5's "your
+      account email must match the domain you're registering" gate proves the registrant controls
+      one inbox at that domain — it does not confirm they're actually the principal, or that
+      Schoolify has any agreement with the institution. Anyone with an `@theirschool.edu`-style
+      address (a teacher, a student, an ex-employee with a still-active account) could technically
+      register the school first. A real launch to actual schools needs a manual verification/sales
+      process before this gate is treated as sufficient, same category as the COPPA item above
 - [ ] Moderation/reporting/blocking shipped as a Phase 8 launch requirement, not a follow-up
 
 ---

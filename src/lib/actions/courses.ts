@@ -20,13 +20,26 @@ export async function createCourse(name: string) {
   return course;
 }
 
+// A school-managed course (teacherId set — see roadmap.md's school-onboarding
+// phase) is owned by its teacher, not by whichever students happen to be
+// enrolled — otherwise any classmate could rename or delete the whole
+// class's course out from under everyone else. A self-tracked course
+// (teacherId null) keeps the original "any enrolled student owns it" rule,
+// since for those the enrolled student *is* the sole owner by construction.
+function ownershipWhere(courseId: string, userId: string) {
+  return {
+    id: courseId,
+    OR: [{ teacherId: userId }, { teacherId: null, enrollments: { some: { studentId: userId } } }],
+  };
+}
+
 export async function renameCourse(courseId: string, name: string) {
   const user = await getCurrentDbUser();
   if (!user) throw new Error("Not signed in");
   if (!name.trim()) throw new Error("Course name is required");
 
   await prisma.course.updateMany({
-    where: { id: courseId, enrollments: { some: { studentId: user.id } } },
+    where: ownershipWhere(courseId, user.id),
     data: { name: name.trim() },
   });
 
@@ -38,12 +51,10 @@ export async function deleteCourse(courseId: string) {
   const user = await getCurrentDbUser();
   if (!user) throw new Error("Not signed in");
 
-  // Only delete if the current user is actually enrolled — enforces
-  // ownership without a separate permission lookup. Assignments under the
-  // course are uncategorized (courseId set null), not deleted — see the
-  // ON DELETE SET NULL in the schema.
+  // Assignments under the course are uncategorized (courseId set null), not
+  // deleted — see the ON DELETE SET NULL in the schema.
   const owned = await prisma.course.findFirst({
-    where: { id: courseId, enrollments: { some: { studentId: user.id } } },
+    where: ownershipWhere(courseId, user.id),
     select: { id: true },
   });
   if (!owned) return;
