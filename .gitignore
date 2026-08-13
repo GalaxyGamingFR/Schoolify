@@ -37,9 +37,18 @@ yarn-error.log*
 # vercel
 .vercel
 
+# supabase CLI local link state
+supabase/.temp/
+
+# clerk deploy DNS reference (ties repo to a personal domain)
+*.zone
+
 # local agent/editor state
 .claude/
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+.vercel
+.env*

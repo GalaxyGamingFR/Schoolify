@@ -3,6 +3,8 @@
 Make school easier, organized, and genuinely engaging. See `claude.md` for the full product spec
 and `roadmap.md` for the phased build order and progress.
 
+**Live:** https://schoolify-blond.vercel.app
+
 ## Stack
 
 Next.js 15 (App Router) + TypeScript, Tailwind + shadcn/ui, PostgreSQL via Prisma, Clerk for

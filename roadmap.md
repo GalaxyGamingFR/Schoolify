@@ -21,11 +21,9 @@ No separate backend service, no GraphQL, no Redis until messaging (Phase 8) actu
 
 ---
 
-## Phase 0 — Foundation (Week 1) — code complete
-Goal: a deployed, logged-in, empty app. Everything buildable without your own accounts is done
-and CI-verified green
-([run](https://github.com/GalaxyGamingFR/Schoolify/actions/runs/31681660996) on commit `d8e8312`).
-Only the two account-gated items below remain, both covered step-by-step in `README.md`.
+## Phase 0 — Foundation (Week 1) — DONE
+Goal: a deployed, logged-in, empty app. Live at
+**[schoolify-blond.vercel.app](https://schoolify-blond.vercel.app)**.
 
 - [x] Initialize Next.js 15 + TypeScript + Tailwind + App Router
 - [x] Install shadcn/ui + Lucide icons
@@ -45,13 +43,22 @@ Only the two account-gated items below remain, both covered step-by-step in `REA
       [github.com/GalaxyGamingFR/Schoolify](https://github.com/GalaxyGamingFR/Schoolify)
 - [x] GitHub Actions CI (`.github/workflows/ci.yml`): lint, typecheck, migration check, build —
       verified green on GitHub, runs against a throwaway Postgres service, no account needed
-- [ ] Deploy to Vercel — **requires your Vercel account + a managed Postgres (Neon/Supabase)**
-- [ ] Add the Clerk webhook endpoint (needs the deployed domain) and set `CLERK_WEBHOOK_SECRET`
-      — **requires the step above first**
+- [x] Production Postgres on Supabase (org "Schoolify", project `axyonzxuzxchpzfmzkkr`, us-east-1).
+      Schema uses a pooled `DATABASE_URL` (pgbouncer, port 6543) for runtime and a `DIRECT_URL`
+      (session pooler, port 5432) for migrations — Supabase's direct host is IPv6-only and this
+      network can't reach it, so migrations go through the pooler instead
+- [x] Deployed to Vercel — [schoolify-blond.vercel.app](https://schoolify-blond.vercel.app),
+      linked to the GitHub repo for auto-deploy on push to `main`
+- [x] Clerk webhook endpoint added pointing at the production domain; `CLERK_WEBHOOK_SIGNING_SECRET`
+      set in Vercel
 
-**Exit criteria:** sign up at a public URL, land on an empty dashboard, role stored in Postgres.
-Verified locally end-to-end (build, CI, `clerk doctor`, live dev-server routes); only the deploy
-itself is outstanding, and that's a you-step, not a code-step.
+**Exit criteria — met:** signed up at a public URL, landed on the dashboard, role stored in
+Postgres. Verified for real: triggered a live `user.updated` event via the Clerk API and confirmed
+it created the `User` row in the *production* Supabase database (not just locally).
+
+**Still running on Clerk dev-instance keys** — usable, but Clerk shows a "development" banner and
+enforces stricter usage limits. Run `clerk deploy` (needs an interactive terminal — see chat) to
+get a real production instance and production keys, then update the Vercel env vars and redeploy.
 
 ## Phase 1 — Task & Calendar Core (Weeks 2–5) — *Module A*
 The MVP. Proves the "makes school easier" premise.
