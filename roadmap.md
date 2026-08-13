@@ -162,9 +162,35 @@ verified: real browser interaction, and no way to verify streak behavior across 
 boundaries in one sitting — the math is tested, not a live multi-day run.
 
 ## Phase 5 — Analytics (Weeks 13–14) — *Module F*
-- [ ] Workload heatmaps
-- [ ] Study efficiency metrics
-- [ ] Predictive "at risk" grade alerts
+- [x] Workload heatmap — `/analytics`, next 4 weeks, assignment count per day by `dueAt`. No
+      schema change needed
+- [x] "Study efficiency metrics" — scope decision: **not** actual-vs-estimated time, because
+      there's no time-tracking in this app (a timer/start-stop UI is a real separate feature, not
+      implied by "Analytics" alone — adding `actualMinutes` without a way to record it would be a
+      dead field). Instead: on-time completion rate and completion pace (trailing 4-week
+      average/week), both derivable from data that already exists
+- [x] Predictive "at risk" alerts — three simple, explainable rules, no ML: (1) course grade below
+      70% (the C-/D boundary already in `grades.ts`), (2) course grade computed from just the last
+      14 days of entries has dropped 5+ points vs. the overall grade — reuses `computeCourseGrade`
+      on two filtered entry sets rather than inventing separate trend math, so it can never
+      disagree with the grade shown on the course page, (3) next week's estimated workload exceeds
+      1.5× the trailing 4-week average
+
+No schema changes this phase — everything reads existing `Assignment`/`GradeEntry` data.
+
+**Verified:** lint and build clean. Hand-calculated test suite (heatmap day-bucketing, on-time
+rate, velocity with an out-of-window exclusion, grade trend matching a manually-computed 70%
+overall / 60% recent / -10 delta, and all three risk-alert types firing correctly while a healthy
+course stays silent) passes against the actual `src/lib/analytics.ts` module — verified once with
+an explicit `.ts` import extension to satisfy Node's standalone ESM resolver (TypeScript's
+`bundler` moduleResolution rejects that in real source, so the source import stayed the normal
+`@/lib/grades` form; the math doesn't change based on import syntax). Query shapes checked against
+local dev data. Not verified: real browser interaction.
+
+The nav bar is now 6 items (Today/Courses/Calendar/Grades/Progress/Analytics) — still works via
+the existing icon+hidden-label-on-mobile pattern, but is getting crowded. Worth considering a
+grouped/dropdown nav redesign before Phase 6 or 7 add more surfaces, not urgent enough to stop and
+do unprompted right now.
 
 ## Phase 6 — Parent Portal (Weeks 15–17) — *Module G*
 - [ ] Parent role, invite/link flow, guardianship acceptance gate
