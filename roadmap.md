@@ -187,10 +187,8 @@ an explicit `.ts` import extension to satisfy Node's standalone ESM resolver (Ty
 `@/lib/grades` form; the math doesn't change based on import syntax). Query shapes checked against
 local dev data. Not verified: real browser interaction.
 
-The nav bar is now 6 items (Today/Courses/Calendar/Grades/Progress/Analytics) — still works via
-the existing icon+hidden-label-on-mobile pattern, but is getting crowded. Worth considering a
-grouped/dropdown nav redesign before Phase 6 or 7 add more surfaces, not urgent enough to stop and
-do unprompted right now.
+The nav bar was flagged here as getting crowded (6 items) — addressed in Phase 7 below once a 7th
+item made it actually necessary, not preemptively.
 
 ## Phase 6 — Parent Portal (Weeks 15–17) — *Module G*
 - [ ] Parent role, invite/link flow, guardianship acceptance gate
@@ -199,8 +197,42 @@ do unprompted right now.
 - [ ] Under-13 signup path (parent-first onboarding, COPPA)
 
 ## Phase 7 — Competitions & Opportunity Hub (Weeks 18–20) — *Module C*
-- [ ] Manually curated opportunity directory (~50 entries) to validate demand
-- [ ] Native Schoolify competitions, leaderboards, verified badges
+- [x] Manually curated opportunity directory — `/opportunities`, 47 entries (target was ~50;
+      stopped adding once the confidently-real list ran out rather than padding to hit a round
+      number) across STEM, math, engineering, computer science, business, writing, debate, arts.
+      Filterable by subject, grade, and free-text search
+- [ ] Native Schoolify competitions, leaderboards, verified badges — **not built**. This needs
+      real product/business decisions (what to run, prize funding, moderation for
+      student-submitted content) that shouldn't get invented unsupervised overnight — see
+      `roadmap.md`'s original framing of Phase 7 for why this half was always going to need you
+
+**Accuracy policy (the load-bearing decision this phase):** rather than inventing specific
+deadlines or prize amounts, every entry's `deadlineNote`/`prizeNote` is either (a) marked
+`[verified Aug 2026]` with a real date/figure checked via live web search at write time — Regeneron
+STS, Regeneron ISEF, FIRST Robotics, Congressional App Challenge, Technovation Girls, Conrad
+Challenge, John Locke Institute, Diamond Challenge, and Scholastic Art & Writing all got checked
+this way — or (b) describes the well-established general pattern (organization, subject, typical
+season) and explicitly says to check the official site for exact current dates. **Google Science
+Fair was checked and confirmed defunct (ended 2018) — excluded entirely** rather than included
+from stale memory. Schema stores `typicalDeadlineMonth` (a rough integer 1-12) rather than a real
+`DateTime` deadline specifically to avoid the schema itself implying false precision.
+
+Schema: new `Opportunity` model, read-only reference data, no relation to `User` — seeded via
+`prisma/seed.mts` (`node prisma/seed.mts`, not run through `prisma db seed` tooling — kept simple
+since this seeds once, it isn't part of the regular dev-reset flow other models don't need either).
+
+Nav: grouped `Progress`/`Analytics`/`Opportunities` into a "More" dropdown (reusing the
+`DropdownMenu` component already proven in `ThemeToggle`) rather than adding a 7th top-level item
+— `Today`/`Courses`/`Calendar`/`Grades` stay as direct links since they're the highest-frequency
+pages.
+
+**Verified:** lint and build clean. Query-shape checks against real seeded local data — subject
+filter, grade-range filter (confirmed MATHCOUNTS shows for grade 7 while Regeneron STS, grades-12-
+only, correctly doesn't), text search, and a data-integrity check that no entry has an empty
+title/URL. Production migrated and seeded, count confirmed at 47. Not verified: real browser
+interaction — in particular, the filter UI's `Select`-plus-`router.push` pattern (chosen over a
+riskier `Select`-wrapping-`Link` composition that was drafted first and reverted once it became
+clear that couldn't be trusted without visual testing) hasn't been clicked through for real.
 
 ## Phase 8 — Messaging & Study Networks (Weeks 21+) — *Module E*
 Last on purpose — most expensive module, most risk.

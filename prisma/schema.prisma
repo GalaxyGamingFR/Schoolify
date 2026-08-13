@@ -202,3 +202,46 @@ model CalendarEvent {
 
   @@index([userId, startsAt])
 }
+
+enum OpportunitySubject {
+  STEM
+  MATH
+  SCIENCE
+  COMPUTER_SCIENCE
+  ENGINEERING
+  BUSINESS
+  WRITING
+  DEBATE
+  ARTS
+  GENERAL
+}
+
+enum PrizeTier {
+  RECOGNITION
+  SMALL
+  MEDIUM
+  LARGE
+  UNKNOWN
+}
+
+// Read-only reference data — manually curated, no user relation. See
+// roadmap.md Phase 7 for the "don't fabricate deadlines/prizes" policy
+// behind deadlineNote/prizeNote being free text rather than exact fields.
+model Opportunity {
+  id                   String             @id @default(cuid())
+  title                String
+  organization         String
+  description          String
+  url                  String
+  subject              OpportunitySubject
+  minGrade             Int? // 1-12, null = no lower bound
+  maxGrade             Int? // 1-12, null = no upper bound
+  typicalDeadlineMonth Int? // 1-12, rough guide only — not a specific date
+  deadlineNote         String // human-readable, honest about uncertainty
+  prizeTier            PrizeTier          @default(UNKNOWN)
+  prizeNote            String?
+  createdAt            DateTime           @default(now())
+
+  @@index([subject])
+  @@index([prizeTier])
+}
