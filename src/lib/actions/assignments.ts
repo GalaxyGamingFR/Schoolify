@@ -70,12 +70,13 @@ export async function updateAssignmentStatus(assignmentId: string, status: Assig
 
   await prisma.assignment.updateMany({
     where: { id: assignmentId, userId: user.id },
-    data: { status },
+    data: { status, completedAt: status === "DONE" ? new Date() : null },
   });
 
   revalidatePath("/dashboard");
   revalidatePath("/calendar");
   revalidatePath("/courses/[id]", "page");
+  revalidatePath("/progress");
 }
 
 export async function deleteAssignment(assignmentId: string) {

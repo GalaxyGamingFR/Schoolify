@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
-import { CalendarDays, ListChecks, Home, GraduationCap } from "lucide-react";
+import { CalendarDays, ListChecks, Home, GraduationCap, Trophy } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 const links = [
@@ -8,6 +8,7 @@ const links = [
   { href: "/courses", label: "Courses", icon: ListChecks },
   { href: "/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/grades", label: "Grades", icon: GraduationCap },
+  { href: "/progress", label: "Progress", icon: Trophy },
 ];
 
 export function AppNav() {

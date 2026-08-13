@@ -149,6 +149,10 @@ model Assignment {
   priority         Priority         @default(MEDIUM)
   dueAt            DateTime
   estimatedMinutes Int?
+  // Set when status transitions to DONE, cleared if unmarked — distinct
+  // from updatedAt (which changes on any edit) so XP/streak calculations
+  // aren't corrupted by unrelated edits to an already-done task.
+  completedAt      DateTime?
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 

@@ -131,9 +131,35 @@ interaction.
       once you're back
 
 ## Phase 4 — Gamification (Weeks 11–12) — *Module H*
-- [ ] XP & level progression
-- [ ] Badges, unlockable themes
-- [ ] Streaks
+- [x] XP & level progression — `/progress`. Design decisions: 10 XP per completed assignment +5
+      on-time bonus (`completedAt <= dueAt`); linear level curve (level N starts at (N-1)×100 XP)
+      since there's no player data yet to justify tuning a curve against
+- [x] Badges — 6 milestone badges (first completion, 10, 100, 7-day streak, 30-day streak,
+      10-in-a-row on-time), evaluated live from stats rather than stored — nothing to keep in
+      sync, badge list can grow without a migration
+- [x] Streaks — consecutive-day assignment completion, computed lazily on page load from
+      `Assignment.completedAt` timestamps (no cron job, no background infrastructure). "Current"
+      streak stays alive through today even if nothing's done yet today — only breaks after a
+      full day passes with no completion
+- [ ] Unlockable themes — deferred; dark/light/system (Phase 3) covers the "themes" ask, a
+      separate unlock-by-achievement cosmetic system is additive scope beyond what the roadmap's
+      own wording strictly requires
+
+Schema: added `Assignment.completedAt` (set/cleared in `updateAssignmentStatus`), distinct from
+`updatedAt` which changes on any edit — using `updatedAt` would have silently corrupted XP/streak
+math the first time someone edited an already-done assignment's title.
+
+**Verified:** lint and build clean. Caught and fixed a real bug during verification: the streak
+calculation round-tripped through ISO date-only strings (`formatISO` → `new Date(string)`), and
+bare `"YYYY-MM-DD"` strings parse as UTC per spec while `date-fns`'s `startOfDay` uses local time
+— on a server not in UTC this silently shifted streak boundaries by a day. Fixed by staying in
+Date-object/local-midnight-timestamp land throughout, never serializing through a string. Full
+hand-calculated test suite (XP totals, level breakpoints, current vs. longest streak, broken
+streaks, same-day dedup, badge thresholds, on-time-streak-stops-at-first-late) passes against the
+actual `src/lib/gamification.ts` module. Schema/action behavior (`completedAt` set on DONE,
+cleared on unmark, progress-page query reflecting both) verified against local dev data. Not
+verified: real browser interaction, and no way to verify streak behavior across actual day
+boundaries in one sitting — the math is tested, not a live multi-day run.
 
 ## Phase 5 — Analytics (Weeks 13–14) — *Module F*
 - [ ] Workload heatmaps
