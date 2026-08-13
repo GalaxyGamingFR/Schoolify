@@ -32,14 +32,21 @@ Goal: a deployed, logged-in, empty app.
       GradeCategory, GradeEntry, CalendarEvent — migrated and verified against local Postgres
       (pinned to Prisma 6.19.3; Prisma 7's new `prisma.config.ts` datasource format is too new/
       undocumented to build the learning-friendly path the plan called for)
-- [x] Integrate Clerk auth code (proxy/middleware, sign-in/sign-up pages, webhook → Prisma sync)
-      — **needs a Clerk account + API keys in `.env` before it runs for real**
+- [x] Integrate Clerk auth: proxy (resource-based checks, not the deprecated middleware
+      route-matcher pattern), sign-in/sign-up pages, webhook → Prisma sync. Linked to a real
+      Clerk app via `clerk init`; `clerk doctor` all-green; `/`, `/sign-in`, `/sign-up` verified
+      200 and `/dashboard` correctly redirects unauthenticated requests (checked against a local
+      dev server, not just the build)
 - [x] Write `canAccessStudentData(actor, studentId)` permission helper (`src/lib/permissions.ts`)
-- [ ] Init git repo, first commit
-- [ ] GitHub Actions CI: typecheck, lint, test on push
+- [x] Init git repo, first commit — pushed to
+      [github.com/GalaxyGamingFR/Schoolify](https://github.com/GalaxyGamingFR/Schoolify)
+- [x] GitHub Actions CI (`.github/workflows/ci.yml`): lint, typecheck, migration check, build —
+      verified green on GitHub, runs against a throwaway Postgres service, no account needed
 - [ ] Deploy to Vercel — **requires user account**
+- [ ] Add the Clerk webhook endpoint (needs the deployed domain) and set `CLERK_WEBHOOK_SECRET`
 
 **Exit criteria:** sign up at a public URL, land on an empty dashboard, role stored in Postgres.
+Everything up to "public URL" is done locally — only the deploy step remains.
 
 ## Phase 1 — Task & Calendar Core (Weeks 2–5) — *Module A*
 The MVP. Proves the "makes school easier" premise.
