@@ -45,6 +45,8 @@ jobs:
 
       - run: npm run lint
 
-      - run: npx tsc --noEmit
-
+      # `next build` runs a full TypeScript check itself. A standalone `tsc
+      # --noEmit` here would run before Next generates its ambient route
+      # types (.next/types, next-env.d.ts) and fail on things like
+      # `LayoutProps` — so typecheck and build happen together.
       - run: npm run build
