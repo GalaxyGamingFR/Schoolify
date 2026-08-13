@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { GraduationCap } from "lucide-react";
 import type { OpportunitySubject } from "@prisma/client";
 
 const SUBJECT_LABELS: Record<OpportunitySubject, string> = {
@@ -29,10 +30,12 @@ export function OpportunityFilters({
   subject,
   grade,
   q,
+  scholarship,
 }: {
   subject?: string;
   grade?: string;
   q?: string;
+  scholarship?: boolean;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -44,7 +47,7 @@ export function OpportunityFilters({
     router.push(`/opportunities?${params.toString()}`);
   }
 
-  const hasFilters = !!(subject || grade || q);
+  const hasFilters = !!(subject || grade || q || scholarship);
 
   return (
     <div className="space-y-2">
@@ -90,6 +93,14 @@ export function OpportunityFilters({
             ))}
           </SelectContent>
         </Select>
+
+        <Button
+          variant={scholarship ? "default" : "outline"}
+          size="sm"
+          onClick={() => updateParam("scholarship", scholarship ? null : "1")}
+        >
+          <GraduationCap className="size-4" /> Offers scholarship
+        </Button>
 
         {hasFilters && (
           <Button variant="ghost" size="sm" onClick={() => router.push("/opportunities")}>

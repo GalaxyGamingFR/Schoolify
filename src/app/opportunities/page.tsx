@@ -32,7 +32,7 @@ const PRIZE_LABELS: Record<PrizeTier, string> = {
 export default async function OpportunitiesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ subject?: string; grade?: string; q?: string }>;
+  searchParams: Promise<{ subject?: string; grade?: string; q?: string; scholarship?: string }>;
 }) {
   const user = await getCurrentDbUser();
   if (!user) redirect("/sign-in");
@@ -41,10 +41,12 @@ export default async function OpportunitiesPage({
   const subject = params.subject as OpportunitySubject | undefined;
   const grade = params.grade ? Number(params.grade) : undefined;
   const q = params.q?.trim();
+  const scholarship = params.scholarship === "1";
 
   const opportunities = await prisma.opportunity.findMany({
     where: {
       ...(subject ? { subject } : {}),
+      ...(scholarship ? { offersScholarship: true } : {}),
       ...(grade
         ? {
             AND: [
@@ -77,7 +79,12 @@ export default async function OpportunitiesPage({
         </p>
 
         <div className="mt-6">
-          <OpportunityFilters subject={subject} grade={grade ? String(grade) : undefined} q={q} />
+          <OpportunityFilters
+            subject={subject}
+            grade={grade ? String(grade) : undefined}
+            q={q}
+            scholarship={scholarship}
+          />
         </div>
 
         <p className="mt-4 text-sm text-muted-foreground">
@@ -98,7 +105,10 @@ export default async function OpportunitiesPage({
                     {o.title}
                     <ExternalLink className="size-3.5 text-muted-foreground" />
                   </a>
-                  <Badge variant="secondary">{SUBJECT_LABELS[o.subject]}</Badge>
+                  <div className="flex gap-1.5">
+                    {o.offersScholarship && <Badge>Scholarship</Badge>}
+                    <Badge variant="secondary">{SUBJECT_LABELS[o.subject]}</Badge>
+                  </div>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-1.5 text-sm">

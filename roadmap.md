@@ -341,10 +341,49 @@ Last on purpose — most expensive module, most risk.
 - [ ] DMs → group chats → (maybe) voice
 
 ## Phase 9 — University Portal & Degree Blueprint (Later) — *Module D + rest of B*
-- [ ] Portfolio/resume builder
-- [ ] University matcher & tracker
-- [ ] Scholarship finder
-- [ ] Degree/prerequisite blueprint tracker
+- [x] Portfolio/resume builder — `/portfolio` (CRUD: club/volunteer/leadership/summer-program/
+      award/work entries) and `/portfolio/resume`, a print-friendly formatted view
+      (`window.print()` → "save as PDF", no new PDF-generation dependency needed for that)
+- [ ] University matcher — **not built, on purpose.** "Compare high school transcript metrics
+      against target university admission criteria" needs real admissions data (GPA/test-score
+      ranges by school) that nobody has provided and that would be actively misleading if
+      fabricated — telling a student they're "a good match" for a school based on invented
+      thresholds is a real harm, not a shortcut. Same category as Phase 7's opportunity-directory
+      accuracy policy, just with higher stakes if gotten wrong
+- [x] University *tracker* (the checklist half) — `/applications`. `UniversityTarget` (school
+      name, deadline, status) with per-target `ApplicationTask` checklist items (essays, recs,
+      test scores, transcript requests) — deliberately no auto-matching against admissions data,
+      see above
+- [x] Scholarship finder — **not a new database.** All 47 Phase 7 opportunity entries are
+      competitions/programs, not standalone scholarship applications, so a mutually-exclusive
+      `type` field would have mislabeled every one of them. Added `Opportunity.offersScholarship`
+      instead and flagged the 5 entries whose existing, already-verified `prizeNote` explicitly
+      says "scholarship" (JSHS, FIRST Robotics, Scholastic Art & Writing, John Locke Institute,
+      CyberPatriot) — filterable on `/opportunities`. A real standalone-scholarship list (Coca-Cola
+      Scholars, QuestBridge, Gates Scholarship, etc.) would need the same live-verification pass
+      as Phase 7's original 47 and is deferred rather than rushed with unverified entries
+- [x] Degree/prerequisite blueprint tracker — `/degree`. Self-authored `DegreeRequirement`s
+      (label, category, credits required/completed), **not** any real institution's official
+      curriculum — nobody has that data, and a per-school prerequisite import is a Phase-10-sized
+      problem (needs institutional partnerships), not something to fabricate. Prerequisites are
+      modeled as a single optional `requiresId` link rather than a full graph — a real "visual
+      prerequisite tree" needs a graph-editing UI that can't be verified without live browser
+      testing in this environment, so it surfaces as a simple "Blocked by: X" badge instead.
+      Deleting a requirement that's referenced as a prerequisite clears the link (`ON DELETE SET
+      NULL`) rather than either failing or cascading, so removing a "for now" placeholder
+      requirement doesn't silently take a whole later requirement down with it
+
+**Verified:** lint and build clean (caught and fixed one real type error: `Select`'s
+`onValueChange` can hand back `string | null`, which doesn't satisfy a `useState<string>` setter
+directly). Hand-calculated suite for `src/lib/degree.ts` (percent capping at 100% on credit
+overage, a 0-credit requirement trivially reading 100% complete, `overallProgress` capping each
+requirement's contribution at its own required credits rather than letting overage on one inflate
+the total, empty-list producing 0% instead of `NaN`, and all four `isBlocked` branches including a
+dangling `requiresId`) passes against the actual module. End-to-end Prisma verification against
+local dev data: activity CRUD, a university target's tasks cascade-deleting with it, a degree
+requirement surviving its prerequisite's deletion with `requiresId` correctly nulled out (not
+cascade-deleted, not left dangling), and the opportunity scholarship backfill landing on exactly
+the 5 intended titles. Not verified: real browser interaction.
 
 ## Phase 10 — LMS Integrations (Opportunistic) — *rest of Module A*
 - [ ] Canvas, Google Classroom, Brightspace, Moodle sync

@@ -21,6 +21,7 @@ type Seed = {
   deadlineNote: string;
   prizeTier?: PrizeTier;
   prizeNote?: string;
+  offersScholarship?: boolean;
 };
 
 const opportunities: Seed[] = [
@@ -175,6 +176,7 @@ const opportunities: Seed[] = [
     deadlineNote: "Regional deadlines vary by region, typically winter — check your regional JSHS site.",
     prizeTier: PrizeTier.MEDIUM,
     prizeNote: "Includes scholarship awards at regional and national levels.",
+    offersScholarship: true,
   },
 
   // --- Math ---
@@ -228,6 +230,7 @@ const opportunities: Seed[] = [
     deadlineNote: "[verified Aug 2026] Next season (BIOCORE, 2026-27) kicks off January 9, 2027 — team registration typically opens before then.",
     prizeTier: PrizeTier.LARGE,
     prizeNote: "Large aggregate college scholarship pool available to participants.",
+    offersScholarship: true,
   },
   {
     title: "FIRST Tech Challenge",
@@ -417,6 +420,7 @@ const opportunities: Seed[] = [
     deadlineNote: "[verified Aug 2026] Entries typically open around October 1 with regional deadlines from December through early January — use the official Region Locator for your exact deadline.",
     prizeTier: PrizeTier.MEDIUM,
     prizeNote: "National medalists are eligible for scholarships.",
+    offersScholarship: true,
   },
   {
     title: "John Locke Institute Essay Competition",
@@ -430,6 +434,7 @@ const opportunities: Seed[] = [
     deadlineNote: "[verified Aug 2026] The 2026 registration window was February-April, submissions due May 31, 2026 — expect a similar window next cycle.",
     prizeTier: PrizeTier.LARGE,
     prizeNote: "Grand prize winners have received $10,000 scholarships toward Institute programs.",
+    offersScholarship: true,
   },
   {
     title: "National Council of Teachers of English (NCTE) Achievement Award in Writing",
@@ -551,6 +556,7 @@ const opportunities: Seed[] = [
     deadlineNote: "Team registration typically opens in late summer/fall for a season running into spring — check official site.",
     prizeTier: PrizeTier.MEDIUM,
     prizeNote: "Includes scholarship awards for top finalist teams.",
+    offersScholarship: true,
   },
   {
     title: "International Genius Olympiad",

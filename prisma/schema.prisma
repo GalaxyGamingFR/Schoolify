@@ -77,6 +77,11 @@ model User {
   taughtCourses    Course[]         @relation("TaughtCourses")
   schoolStaffRoles SchoolStaff[]
 
+  // Phase 9: University Portal & Degree Blueprint
+  activities         Activity[]
+  universityTargets  UniversityTarget[]
+  degreeRequirements DegreeRequirement[]
+
   @@index([role])
 }
 
@@ -293,6 +298,14 @@ model Opportunity {
   description          String
   url                  String
   subject              OpportunitySubject
+  // Added in Phase 9 as the "scholarship finder": every one of the 47
+  // Phase 7 entries is a competition/program, not a standalone scholarship
+  // application, so a mutually-exclusive `type` enum would have mislabeled
+  // them. This flags the ones that *award* scholarship money as a prize
+  // (several already do — see prizeNote) instead of pretending they're
+  // something else. See roadmap.md for why a real pure-scholarship list
+  // (Coca-Cola Scholars, QuestBridge, etc.) is deferred rather than rushed.
+  offersScholarship    Boolean            @default(false)
   minGrade             Int? // 1-12, null = no lower bound
   maxGrade             Int? // 1-12, null = no upper bound
   typicalDeadlineMonth Int? // 1-12, rough guide only — not a specific date
@@ -303,4 +316,108 @@ model Opportunity {
 
   @@index([subject])
   @@index([prizeTier])
+  @@index([offersScholarship])
+}
+
+// --- Phase 9: University Portal & Degree Blueprint (Module D + rest of B) ---
+// Scope note: no invented real-world data anywhere below (no fabricated
+// admissions criteria, no per-institution prerequisite trees) — everything
+// here is self-authored by the student, the same trust boundary already
+// used for grade categories/weights. See roadmap.md for what was
+// deliberately left out and why.
+
+enum ActivityCategory {
+  CLUB
+  VOLUNTEER
+  LEADERSHIP
+  SUMMER_PROGRAM
+  AWARD
+  WORK
+  OTHER
+}
+
+/** One line of a student's portfolio/resume. */
+model Activity {
+  id           String           @id @default(cuid())
+  user         User             @relation(fields: [userId], references: [id])
+  userId       String
+  title        String
+  organization String?
+  category     ActivityCategory @default(OTHER)
+  role         String?
+  description  String?
+  hoursTotal   Int?
+  startDate    DateTime?
+  endDate      DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@index([userId])
+}
+
+enum ApplicationStatus {
+  RESEARCHING
+  APPLYING
+  SUBMITTED
+  ACCEPTED
+  REJECTED
+  WAITLISTED
+  DECLINED
+}
+
+/** A university/program a student is tracking — not matched against any admissions data, just self-entered. */
+model UniversityTarget {
+  id                  String            @id @default(cuid())
+  user                User              @relation(fields: [userId], references: [id])
+  userId              String
+  name                String
+  applicationDeadline DateTime?
+  status              ApplicationStatus @default(RESEARCHING)
+  notes               String?
+  createdAt           DateTime          @default(now())
+
+  tasks ApplicationTask[]
+
+  @@index([userId])
+}
+
+/** One checklist item (essay, recommendation letter, test score, transcript request, ...) under a target. */
+model ApplicationTask {
+  id       String           @id @default(cuid())
+  target   UniversityTarget @relation(fields: [targetId], references: [id], onDelete: Cascade)
+  targetId String
+  title    String
+  done     Boolean          @default(false)
+  dueDate  DateTime?
+  createdAt DateTime        @default(now())
+
+  @@index([targetId])
+}
+
+/**
+ * A self-authored degree requirement, not a real institution's official
+ * curriculum — nobody has that data. `requiresId` models a single
+ * prerequisite link (not a full graph) on purpose: a real "visual
+ * prerequisite tree" needs a graph-editing UI that can't be verified
+ * without live browser testing in this environment, so it's a simple
+ * "blocked by one other requirement" relation instead of a DAG.
+ */
+model DegreeRequirement {
+  id               String   @id @default(cuid())
+  user             User     @relation(fields: [userId], references: [id])
+  userId           String
+  label            String // e.g. "General Education — English"
+  category         String? // free-text grouping, e.g. "Core", "Major", "Elective"
+  creditsRequired  Float
+  creditsCompleted Float    @default(0)
+  notes            String?
+
+  requires   DegreeRequirement?  @relation("Prereq", fields: [requiresId], references: [id])
+  requiresId String?
+  blockedBy  DegreeRequirement[] @relation("Prereq")
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([requiresId])
 }

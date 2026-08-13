@@ -10,6 +10,9 @@ import {
   Compass,
   MoreHorizontal,
   Users,
+  FileUser,
+  ClipboardList,
+  Milestone,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -34,6 +37,9 @@ const moreLinks = [
   { href: "/progress", label: "Progress", icon: Trophy },
   { href: "/analytics", label: "Analytics", icon: LineChart },
   { href: "/opportunities", label: "Opportunities", icon: Compass },
+  { href: "/portfolio", label: "Portfolio", icon: FileUser },
+  { href: "/applications", label: "Applications", icon: ClipboardList },
+  { href: "/degree", label: "Degree plan", icon: Milestone },
 ];
 
 // Fetches its own current-user row rather than taking a prop — every page
