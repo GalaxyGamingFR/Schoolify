@@ -1,39 +1,18 @@
-import { headers } from "next/headers";
-import { Webhook } from "svix";
-import type { WebhookEvent } from "@clerk/nextjs/server";
+import { verifyWebhook } from "@clerk/nextjs/webhooks";
+import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 // Verifies and handles Clerk's user.created/user.updated/user.deleted events
 // so our User table stays in sync without the client ever writing it directly.
-// Configure this URL (https://<domain>/api/webhooks/clerk) in the Clerk
-// dashboard once deployed, and copy the signing secret into
-// CLERK_WEBHOOK_SECRET.
-export async function POST(req: Request) {
-  const webhookSecret = process.env.CLERK_WEBHOOK_SECRET;
-  if (!webhookSecret) {
-    return new Response("CLERK_WEBHOOK_SECRET is not configured", { status: 500 });
-  }
-
-  const headerPayload = await headers();
-  const svixId = headerPayload.get("svix-id");
-  const svixTimestamp = headerPayload.get("svix-timestamp");
-  const svixSignature = headerPayload.get("svix-signature");
-
-  if (!svixId || !svixTimestamp || !svixSignature) {
-    return new Response("Missing svix headers", { status: 400 });
-  }
-
-  const body = await req.text();
-
-  let event: WebhookEvent;
+// Configure this URL (https://<domain>/api/webhooks/clerk) as a webhook
+// endpoint in the Clerk dashboard, and copy its signing secret into
+// CLERK_WEBHOOK_SIGNING_SECRET.
+export async function POST(req: NextRequest) {
+  let event;
   try {
-    event = new Webhook(webhookSecret).verify(body, {
-      "svix-id": svixId,
-      "svix-timestamp": svixTimestamp,
-      "svix-signature": svixSignature,
-    }) as WebhookEvent;
+    event = await verifyWebhook(req);
   } catch {
-    return new Response("Invalid signature", { status: 400 });
+    return new Response("Verification failed", { status: 400 });
   }
 
   switch (event.type) {

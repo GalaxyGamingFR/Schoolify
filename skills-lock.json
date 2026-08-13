@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "agent-email-inbox": {
+      "source": "resend/resend-skills",
+      "sourceType": "github",
+      "skillPath": "skills/agent-email-inbox/SKILL.md",
+      "computedHash": "e33f2863d24a5a4b96d8bc548a26f757c893b70db97034349973b381f6ed670d"
+    },
     "clerk": {
       "source": "clerk/skills",
       "sourceType": "github",
@@ -120,6 +126,462 @@
       "sourceType": "github",
       "skillPath": "skills/features/clerk-webhooks/SKILL.md",
       "computedHash": "6acecf8a6a4a77294c87874bce189d311bce39ea28786a010d2769b922fbb8cc"
+    },
+    "connect-recommend": {
+      "source": "stripe/ai",
+      "sourceType": "github",
+      "skillPath": "skills/connect-recommend/SKILL.md",
+      "computedHash": "aae17b6d265ff04d0ce91b68effc84270f2e829d086091b6b6bc1791209dcc80"
+    },
+    "email-best-practices": {
+      "source": "resend/resend-skills",
+      "sourceType": "github",
+      "skillPath": "skills/email-best-practices/SKILL.md",
+      "computedHash": "cf53e0d7ad72c440818c64a104ab220f527f26f10c7d8163fa99e066bf747eed"
+    },
+    "pinecone-assistant": {
+      "source": "pinecone-io/skills",
+      "sourceType": "github",
+      "skillPath": "skills/pinecone-assistant/SKILL.md",
+      "computedHash": "cd14a0d3c9ab8c0252baaf308dfece9794ade9f2287ccb9d0654027b19e8e039"
+    },
+    "pinecone-cli": {
+      "source": "pinecone-io/skills",
+      "sourceType": "github",
+      "skillPath": "skills/pinecone-cli/SKILL.md",
+      "computedHash": "3b3bfe7904799937da26267b2761e2f523989524eac56701076143b7da299be1"
+    },
+    "pinecone-docs": {
+      "source": "pinecone-io/skills",
+      "sourceType": "github",
+      "skillPath": "skills/pinecone-docs/SKILL.md",
+      "computedHash": "a9b262a04fe2d5d81bac2e59acc79cc609429a94ecbb710bc18f996926de18e1"
+    },
+    "pinecone-full-text-search": {
+      "source": "pinecone-io/skills",
+      "sourceType": "github",
+      "skillPath": "skills/pinecone-full-text-search/SKILL.md",
+      "computedHash": "5589226639c3b30b63a3bd4478fa083ee4bbc6be5105e2f60487cf88e385ee96"
+    },
+    "pinecone-help": {
+      "source": "pinecone-io/skills",
+      "sourceType": "github",
+      "skillPath": "skills/pinecone-help/SKILL.md",
+      "computedHash": "c64c4b5b3cbbf718829ecf7357cb38dec80c1763a36eaa02ae6b059b7fcfc821"
+    },
+    "pinecone-mcp": {
+      "source": "pinecone-io/skills",
+      "sourceType": "github",
+      "skillPath": "skills/pinecone-mcp/SKILL.md",
+      "computedHash": "ced96211bfe2cd8a09d257b9a2e92def6bb0e4d4c89452d298e8e0acd77cb890"
+    },
+    "pinecone-n8n": {
+      "source": "pinecone-io/skills",
+      "sourceType": "github",
+      "skillPath": "skills/pinecone-n8n/SKILL.md",
+      "computedHash": "ad618782544d2335efbbad477e433d33e722c5e8e0cd2b8949f5e021b8672a5f"
+    },
+    "pinecone-query": {
+      "source": "pinecone-io/skills",
+      "sourceType": "github",
+      "skillPath": "skills/pinecone-query/SKILL.md",
+      "computedHash": "9bc01b2ab4f1f9b6b6666998e9a82ac64eb103a6e1d85a76a4210037731635bc"
+    },
+    "pinecone-quickstart": {
+      "source": "pinecone-io/skills",
+      "sourceType": "github",
+      "skillPath": "skills/pinecone-quickstart/SKILL.md",
+      "computedHash": "ab8eeb5e6457cab0edbb9f88a130394ca737dd5ed52736787660e4a5bab552bc"
+    },
+    "react-email": {
+      "source": "resend/resend-skills",
+      "sourceType": "github",
+      "skillPath": "skills/react-email/SKILL.md",
+      "computedHash": "1d2afbc631670c6bc23e90d0d4776d25f08eabed4bac72485bf06aea1f91ae89"
+    },
+    "resend": {
+      "source": "resend/resend-skills",
+      "sourceType": "github",
+      "skillPath": "skills/resend/SKILL.md",
+      "computedHash": "b6d29c14be496cc4e29fcd9950da977ea598606a068cccd621a51e8fce499d87"
+    },
+    "resend-cli": {
+      "source": "resend/resend-skills",
+      "sourceType": "github",
+      "skillPath": "skills/resend-cli/SKILL.md",
+      "computedHash": "7d7b6d5548625e77f6bff1557d8e32c4d2afe8d8a76a05f450b3170b8f26f5a1"
+    },
+    "stripe-apps": {
+      "source": "stripe/ai",
+      "sourceType": "github",
+      "skillPath": "skills/stripe-apps/SKILL.md",
+      "computedHash": "09abd2dd1acb7bd3907e9c49946cb50d9485a41be6499c9bce0f32b7b7535b21"
+    },
+    "stripe-best-practices": {
+      "source": "stripe/ai",
+      "sourceType": "github",
+      "skillPath": "skills/stripe-best-practices/SKILL.md",
+      "computedHash": "572138335dd0d757a1654dac7e800e31abc0d0bee3e8b5e3c0cf3107ac52decf"
+    },
+    "stripe-directory": {
+      "source": "stripe/ai",
+      "sourceType": "github",
+      "skillPath": "skills/stripe-directory/SKILL.md",
+      "computedHash": "ae3c61894ca5129409412728bd5b26626ba965e524ad21c1736db59bfc36d1d0"
+    },
+    "stripe-docs": {
+      "source": "stripe/ai",
+      "sourceType": "github",
+      "skillPath": "skills/stripe-docs/SKILL.md",
+      "computedHash": "c9f90c8b96aaef1f331b60e2ff89175934fbb9193abad3d5091f6b9110a732d2"
+    },
+    "stripe-projects": {
+      "source": "stripe/ai",
+      "sourceType": "github",
+      "skillPath": "skills/stripe-projects/SKILL.md",
+      "computedHash": "13281b04862e1bf08b55731d926db7803b9f03f760a87d1a82d1e606b98deb3c"
+    },
+    "twilio-account-setup": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-account-setup/SKILL.md",
+      "computedHash": "18b3852bb0c5d660773b3d29f2f6822820ca374116d6a1282c65b0133b75fdab"
+    },
+    "twilio-agent-augmentation-architect": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-agent-augmentation-architect/SKILL.md",
+      "computedHash": "a9038f52ef787217f2efb9a4b0c89e66929e238449a70a45197018b33dc94e1a"
+    },
+    "twilio-ai-agent-architect": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-ai-agent-architect/SKILL.md",
+      "computedHash": "e9284da06572949f556d7b08bb3d9d42ebb99289801f433ae6c290a83920c6cb"
+    },
+    "twilio-call-recordings": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-call-recordings/SKILL.md",
+      "computedHash": "8b7537f374bded7ec61530c81469d457e7f13043242250a775491e3eb654416e"
+    },
+    "twilio-cli-reference": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-cli-reference/SKILL.md",
+      "computedHash": "6d855539a07ba084112ee44eb35e92e5db56f6fa13c954a2ec0c84dbcc6f08cb"
+    },
+    "twilio-compliance-onboarding": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-compliance-onboarding/SKILL.md",
+      "computedHash": "5dac84129e07f5b32a7706c25ba14f76bf1757a346fff9c7edb9c4b10c5bfa74"
+    },
+    "twilio-compliance-traffic": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-compliance-traffic/SKILL.md",
+      "computedHash": "2132d5fccb02e39f714fe869d67f3ae8439e0b24d165c1f64e5e934a2e3bd3ff"
+    },
+    "twilio-conference-calls": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-conference-calls/SKILL.md",
+      "computedHash": "78ecfc62766cf2bd677c74c5a1e160c607863dbd4b92168549c0851713211b6b"
+    },
+    "twilio-content-template-builder": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-content-template-builder/SKILL.md",
+      "computedHash": "8dbe78c95c74abaec50f870122bf5ab21f77833e0d08fb13029c8f94c7c64efc"
+    },
+    "twilio-conversation-intelligence": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-conversation-intelligence/SKILL.md",
+      "computedHash": "26f0e3b5b93dbdb3e939457d6cc913580e5eb5873b43cc6f679e15cec63a4733"
+    },
+    "twilio-conversation-memory": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-conversation-memory/SKILL.md",
+      "computedHash": "04611afeae9e9d12fe2d3c4bd5eb311bdae8920a5cd8da82bcceca3d2e8f3c21"
+    },
+    "twilio-conversation-orchestrator": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-conversation-orchestrator/SKILL.md",
+      "computedHash": "741a18e5ea502442b303ee9b21b10ef9f33493f0a4cf1cf91a9d4d3fd00a7e84"
+    },
+    "twilio-conversations-classic-api": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-conversations-classic-api/SKILL.md",
+      "computedHash": "625bf6fb76ea3be50417fe98b9229626dfb391ce488e31eec8f77d3ea9d9f750"
+    },
+    "twilio-customer-support-architect": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-customer-support-architect/SKILL.md",
+      "computedHash": "5761661edb41f370c9061dbe329d10cfbb8b92212941184ec151d391181c3cdf"
+    },
+    "twilio-debugging-observability": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-debugging-observability/SKILL.md",
+      "computedHash": "b725e37067bac4d53f979055a403c12ec161dd0dfe0a63438249c1b5d5e20690"
+    },
+    "twilio-email-deliverability-advisor": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-email-deliverability-advisor/SKILL.md",
+      "computedHash": "a037aeefbc7e1b9a64230d402d0b652109d2ae075573e37f4ddf6512d08a59fc"
+    },
+    "twilio-email-send": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-email-send/SKILL.md",
+      "computedHash": "12f78f2b40e49764ba9a8eb1049068fe29afad3916a78b3e7a33a9a58e9387b5"
+    },
+    "twilio-enterprise-knowledge": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-enterprise-knowledge/SKILL.md",
+      "computedHash": "89a9a965fcf29371b0edb160887e51bda48372b7ad1b0115341880eb7770fd51"
+    },
+    "twilio-iam-auth-setup": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-iam-auth-setup/SKILL.md",
+      "computedHash": "060b89ce0fa7de974ad9ad72e03f92c6637393cc548ad20108abac513013fff9"
+    },
+    "twilio-identity-verification-advisor": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-identity-verification-advisor/SKILL.md",
+      "computedHash": "3bca6ebccdcb1adcc5d0816a808b767d0699e2baedb3ddde90802ebe9b5f636d"
+    },
+    "twilio-isv-sms-best-practices": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-sms-isv-setup/SKILL.md",
+      "computedHash": "654ad72296c08b5b35909d08d69aaa1a73d0b802d212820d18de41fa529fbb72"
+    },
+    "twilio-lookup-phone-intelligence": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-lookup-phone-intelligence/SKILL.md",
+      "computedHash": "08d03ba5436f524901ca128bc8a85bcd4b43aa5d7a7d18b913e5777c07c4ffe5"
+    },
+    "twilio-marketing-promotions-advisor": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-marketing-promotions-advisor/SKILL.md",
+      "computedHash": "8456aea2109346964147d8bf202c4bee8d2d57ec0f16dbb33637646c5b0e4b31"
+    },
+    "twilio-messaging-channel-advisor": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-messaging-channel-advisor/SKILL.md",
+      "computedHash": "1858071fe3914fb93f6407b2f7154c2ba043ccf4268dcb2dcb68385e9ccb4aba"
+    },
+    "twilio-messaging-overview": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-messaging-overview/SKILL.md",
+      "computedHash": "215c39422dca4b48809a9dc89a0ba36241562781c55a2f8bc386402bfd1b503e"
+    },
+    "twilio-messaging-services": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-messaging-services/SKILL.md",
+      "computedHash": "b5ab69536e253ac8e3655d19f5cae1fed647434275c9293414eec5615273e53f"
+    },
+    "twilio-messaging-webhooks": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-messaging-webhooks/SKILL.md",
+      "computedHash": "ca1ac823ebcd575e2da64d5d9c19899c7d5eb2aabfbfdd2f646ef59aba771b62"
+    },
+    "twilio-migrate-messaging-to-verify": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-migrate-messaging-to-verify/SKILL.md",
+      "computedHash": "db724f438719536c18a107ad81c4b2972ad88421d6aa82e3c649d6840f4b858f"
+    },
+    "twilio-notifications-alerts-advisor": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-notifications-alerts-advisor/SKILL.md",
+      "computedHash": "8343880f1611f0dbae799c426f6b0086c019f2a8975798f870193286e1aa49a7"
+    },
+    "twilio-numbers-senders": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-numbers-senders/SKILL.md",
+      "computedHash": "81718089faff95b42a68a62e72c0b3e30054cfb7b6515aaca0c71c7872faad70"
+    },
+    "twilio-organizations-setup": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-organizations-setup/SKILL.md",
+      "computedHash": "e4c5971fb6c0da6b1ab61a656f3975893adadaeabc65750f956cbf8e0d57675e"
+    },
+    "twilio-rcs-messaging": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-rcs-messaging/SKILL.md",
+      "computedHash": "6cf8eaf98a076ae9f6df48b387564609e3d9c1976d461037f22b6ea265d49650"
+    },
+    "twilio-regulatory-compliance-bundles": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-regulatory-compliance-bundles/SKILL.md",
+      "computedHash": "5f78f57cf48af9c62fb2ec84905abf06bae1c80a25d4f9ba65d36bae677b18c1"
+    },
+    "twilio-reliability-patterns": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-reliability-patterns/SKILL.md",
+      "computedHash": "78559c86f80fc6193318a67ccadc9c78933c612870ed9f856ec853d277206c86"
+    },
+    "twilio-security-api-auth": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-security-api-auth/SKILL.md",
+      "computedHash": "1ace9298f11c89e9cd24555c5531add1b137f16d79dc07604c533f9a439636a2"
+    },
+    "twilio-security-compliance-hipaa": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-security-compliance-hipaa/SKILL.md",
+      "computedHash": "19e4c7f4d9b4f79d90518c2943d6c5734749439f23e971c5fb6160790f593a98"
+    },
+    "twilio-security-hardening": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-security-hardening/SKILL.md",
+      "computedHash": "81b3c4f89f7af36422b85714bbef60fd2f8dd1069d7fc3e879bd03c6e36dd654"
+    },
+    "twilio-send-message": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-send-message/SKILL.md",
+      "computedHash": "63506cc7124c69c2318f116a0e8cb4732c73f4cef3bdd7e87d96fcf651198356"
+    },
+    "twilio-sendgrid-account-setup": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/sendgrid/twilio-sendgrid-account-setup/SKILL.md",
+      "computedHash": "c59fd4452865fdaa8e9f520f429a870b118cb60b8a40f5e102c2c23e019cbead"
+    },
+    "twilio-sendgrid-deliverability-advisor": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/sendgrid/twilio-sendgrid-deliverability-advisor/SKILL.md",
+      "computedHash": "68cd4897a430e677abf460423ccb24050f715fdc0b992b70dded2b63204623b4"
+    },
+    "twilio-sendgrid-email-send": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/sendgrid/twilio-sendgrid-email-send/SKILL.md",
+      "computedHash": "77f92acd8ab086b6a68cc54312b290c514cfeb6cdf07a355bbd8027429067dd4"
+    },
+    "twilio-sendgrid-email-settings": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/sendgrid/twilio-sendgrid-email-settings/SKILL.md",
+      "computedHash": "c12ca3d5fdc74545ecb2ad2ffd32083432deac8b67a84c396faa4eca1bbb61fc"
+    },
+    "twilio-sendgrid-engagement-quality": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/sendgrid/twilio-sendgrid-engagement-quality/SKILL.md",
+      "computedHash": "fc11b2a49782f851f5e578ad5904e52b8adcc5f0f938829428079d407b945874"
+    },
+    "twilio-sendgrid-inbound-parse": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/sendgrid/twilio-sendgrid-inbound-parse/SKILL.md",
+      "computedHash": "1af257e6a3092840b37d11d0be172601a541cacff9655934dc3d8e4310562a7a"
+    },
+    "twilio-sendgrid-suppressions": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/sendgrid/twilio-sendgrid-suppressions/SKILL.md",
+      "computedHash": "2bbdd5f3918fc51367791fda20486754522aab19e69c225d5ab096349131a1b2"
+    },
+    "twilio-sendgrid-webhooks": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/sendgrid/twilio-sendgrid-webhooks/SKILL.md",
+      "computedHash": "b279098c985d828ca52c5907c56343ac631896d79ee45d86498f1286ea7c3405"
+    },
+    "twilio-sms-send-message": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-sms-send-message/SKILL.md",
+      "computedHash": "38e74d9888a7e78029e6cbdcfd4689d0bae7a5454587d90cb01f9928e9e505a8"
+    },
+    "twilio-studio-flows": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-studio-flows/SKILL.md",
+      "computedHash": "8fbf37dc28461dc78c75f851f7228e129c2852776c5d6d8df003239e1a4e0e86"
+    },
+    "twilio-taskrouter-routing": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-taskrouter-routing/SKILL.md",
+      "computedHash": "ffe2bb313e20a2987bbccd98962113dfd64bf95de10515f4c21bd7849ff56e40"
+    },
+    "twilio-verify-send-otp": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-verify-send-otp/SKILL.md",
+      "computedHash": "b617f3c6b1a1445392623ee0039dd73219d811ff29f5c0c3bc6e558835dc792b"
+    },
+    "twilio-voice-conversation-relay": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-voice-conversation-relay/SKILL.md",
+      "computedHash": "2117041895ff99abc12b65c05a48f0726a71a051a2282e9d096e139888e1eda3"
+    },
+    "twilio-voice-outbound-calls": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-voice-outbound-calls/SKILL.md",
+      "computedHash": "d87e7a852bd410eaa156def3bca526686e61d57dc93c04293b5e516b3c300c4a"
+    },
+    "twilio-voice-twiml": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-voice-twiml/SKILL.md",
+      "computedHash": "f773a856674d44c4fe55ecf7d0f0d6265c872a1f8686fb25c95e7b745c23e01e"
+    },
+    "twilio-webhook-architecture": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-webhook-architecture/SKILL.md",
+      "computedHash": "cc9b9e41574a66d5c88346ea96dd14b41877e9c63bfe16e941600a6cb38b9497"
+    },
+    "twilio-whatsapp-manage-senders": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-whatsapp-manage-senders/SKILL.md",
+      "computedHash": "2ac494e58d110ebbeb8defba34bb44697cd74025e784428b349b15e1ff9bf075"
+    },
+    "twilio-whatsapp-send-message": {
+      "source": "twilio/skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/twilio-whatsapp-send-message/SKILL.md",
+      "computedHash": "66234ead086344f4cafbeed68687d4f4a8ee79da921a0fc631a6a8532d11fc5d"
+    },
+    "upgrade-stripe": {
+      "source": "stripe/ai",
+      "sourceType": "github",
+      "skillPath": "skills/upgrade-stripe/SKILL.md",
+      "computedHash": "2c801a9292311f24937b52a3578ec3d97271c0b01efb1a8fc26caff2a86ff1f2"
     }
   }
 }

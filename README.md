@@ -38,8 +38,15 @@ done by an agent — each requires signing in as you.
 3. In the Clerk dashboard, add a webhook endpoint pointing at
    `https://<your-deployed-domain>/api/webhooks/clerk` (once deployed — see below), subscribed to
    `user.created`, `user.updated`, `user.deleted`. Copy the **Signing secret** into `.env` as
-   `CLERK_WEBHOOK_SECRET`. This is what keeps our `User` table in sync with Clerk; without it,
-   the dashboard will show "waiting on the Clerk webhook to sync."
+   `CLERK_WEBHOOK_SIGNING_SECRET`. This is what keeps our `User` table in sync with Clerk;
+   without it, the dashboard will show "waiting on the Clerk webhook to sync."
+
+   To test this locally before deploying, use the Clerk CLI's tunnel instead of a real domain:
+   ```
+   clerk webhooks listen --forward-to http://localhost:3000/api/webhooks/clerk
+   ```
+   It prints a `https://webhooks.clerk.com/in/c_.../` relay URL — add *that* as the dashboard
+   endpoint (steps above) to get a local signing secret.
 
 ### 2. Managed Postgres — required before deploying (local dev uses Docker instead)
 
