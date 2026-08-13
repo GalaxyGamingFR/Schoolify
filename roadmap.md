@@ -21,8 +21,11 @@ No separate backend service, no GraphQL, no Redis until messaging (Phase 8) actu
 
 ---
 
-## Phase 0 — Foundation (Week 1)
-Goal: a deployed, logged-in, empty app.
+## Phase 0 — Foundation (Week 1) — code complete
+Goal: a deployed, logged-in, empty app. Everything buildable without your own accounts is done
+and CI-verified green
+([run](https://github.com/GalaxyGamingFR/Schoolify/actions/runs/31681660996) on commit `d8e8312`).
+Only the two account-gated items below remain, both covered step-by-step in `README.md`.
 
 - [x] Initialize Next.js 15 + TypeScript + Tailwind + App Router
 - [x] Install shadcn/ui + Lucide icons
@@ -42,11 +45,13 @@ Goal: a deployed, logged-in, empty app.
       [github.com/GalaxyGamingFR/Schoolify](https://github.com/GalaxyGamingFR/Schoolify)
 - [x] GitHub Actions CI (`.github/workflows/ci.yml`): lint, typecheck, migration check, build —
       verified green on GitHub, runs against a throwaway Postgres service, no account needed
-- [ ] Deploy to Vercel — **requires user account**
+- [ ] Deploy to Vercel — **requires your Vercel account + a managed Postgres (Neon/Supabase)**
 - [ ] Add the Clerk webhook endpoint (needs the deployed domain) and set `CLERK_WEBHOOK_SECRET`
+      — **requires the step above first**
 
 **Exit criteria:** sign up at a public URL, land on an empty dashboard, role stored in Postgres.
-Everything up to "public URL" is done locally — only the deploy step remains.
+Verified locally end-to-end (build, CI, `clerk doctor`, live dev-server routes); only the deploy
+itself is outstanding, and that's a you-step, not a code-step.
 
 ## Phase 1 — Task & Calendar Core (Weeks 2–5) — *Module A*
 The MVP. Proves the "makes school easier" premise.
