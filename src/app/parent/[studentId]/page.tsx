@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { addDays, format, startOfDay } from "date-fns";
@@ -13,6 +14,11 @@ import { AlertTriangle, ArrowLeft, Flame, TrendingDown } from "lucide-react";
 import { RemoveGuardianshipButton } from "@/components/remove-guardianship-button";
 
 const TREND_WINDOW_DAYS = 14;
+
+export const metadata: Metadata = {
+  title: "Student Overview",
+  description: "Academic health overview for a linked student.",
+};
 
 export default async function ParentStudentPage({
   params,

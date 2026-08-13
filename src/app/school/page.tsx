@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentDbUser } from "@/lib/current-user";
@@ -8,6 +9,11 @@ import { RegisterSchoolForm } from "@/components/register-school-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ChevronRight } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Schools",
+  description: "Register or manage a school on Schoolify.",
+};
 
 export default async function SchoolHubPage() {
   const user = await getCurrentDbUser();

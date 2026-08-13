@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
@@ -27,6 +28,11 @@ const PRIZE_LABELS: Record<PrizeTier, string> = {
   MEDIUM: "Medium prizes",
   LARGE: "Large prizes",
   UNKNOWN: "Varies",
+};
+
+export const metadata: Metadata = {
+  title: "Opportunities",
+  description: "Competitions, fairs, and programs for students.",
 };
 
 export default async function OpportunitiesPage({

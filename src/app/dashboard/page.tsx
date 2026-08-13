@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
@@ -12,6 +13,11 @@ import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/prisma";
 import { needsGuardianVerification } from "@/lib/coppa";
 import { BookPlus, ShieldAlert } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Today",
+  description: "What's due today and coming up this week.",
+};
 
 export default async function DashboardPage() {
   const clerkUser = await currentUser();

@@ -7,8 +7,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
-export function NewConversationForm({ contacts }: { contacts: { id: string; name: string }[] }) {
+export function NewConversationForm({
+  contacts,
+}: {
+  contacts: { id: string; name: string; relation: string }[];
+}) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [groupName, setGroupName] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -47,6 +52,9 @@ export function NewConversationForm({ contacts }: { contacts: { id: string; name
           <label key={c.id} className="flex items-center gap-2 text-sm">
             <Checkbox checked={selected.has(c.id)} onCheckedChange={() => toggle(c.id)} />
             {c.name}
+            <Badge variant="secondary" className="text-xs">
+              {c.relation}
+            </Badge>
           </label>
         ))}
       </div>

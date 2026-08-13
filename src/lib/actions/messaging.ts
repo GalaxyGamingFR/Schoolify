@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { canMessageDirectly } from "@/lib/messaging";
+import { enforceRateLimit, messageLimiter, sensitiveActionLimiter } from "@/lib/rate-limit";
 
 async function courseIdsFor(userId: string): Promise<string[]> {
   const [enrolled, taught] = await Promise.all([
@@ -23,6 +24,19 @@ async function isBlockedEitherDirection(userAId: string, userBId: string): Promi
     },
   });
   return block !== null;
+}
+
+async function isGuardianLinked(userAId: string, userBId: string): Promise<boolean> {
+  const guardianship = await prisma.guardianship.findFirst({
+    where: {
+      status: "ACCEPTED",
+      OR: [
+        { parentId: userAId, studentId: userBId },
+        { parentId: userBId, studentId: userAId },
+      ],
+    },
+  });
+  return guardianship !== null;
 }
 
 /** Access check for DIRECT/GROUP conversations (participant-based) and COURSE ones (roster-derived). */
@@ -56,14 +70,24 @@ export async function startDirectConversation(otherUserId: string) {
   if (!user) throw new Error("Not signed in");
   if (otherUserId === user.id) throw new Error("Can't message yourself");
 
-  const [myCourseIds, theirCourseIds, blocked] = await Promise.all([
+  const [myCourseIds, theirCourseIds, blocked, guardianLinked] = await Promise.all([
     courseIdsFor(user.id),
     courseIdsFor(otherUserId),
     isBlockedEitherDirection(user.id, otherUserId),
+    isGuardianLinked(user.id, otherUserId),
   ]);
 
-  if (!canMessageDirectly({ userACourseIds: myCourseIds, userBCourseIds: theirCourseIds, blockedEitherDirection: blocked })) {
-    throw new Error(blocked ? "You can't message this person" : "You can only message classmates or your teacher");
+  if (
+    !canMessageDirectly({
+      userACourseIds: myCourseIds,
+      userBCourseIds: theirCourseIds,
+      isGuardianLinked: guardianLinked,
+      blockedEitherDirection: blocked,
+    })
+  ) {
+    throw new Error(
+      blocked ? "You can't message this person" : "You can only message classmates, your teacher, or a linked guardian",
+    );
   }
 
   // Reuse an existing DIRECT conversation between exactly these two people instead of duplicating.
@@ -98,12 +122,20 @@ export async function startGroupConversation(input: { name: string; participantI
 
   const myCourseIds = await courseIdsFor(user.id);
   for (const participantId of uniqueParticipantIds) {
-    const [theirCourseIds, blocked] = await Promise.all([
+    const [theirCourseIds, blocked, guardianLinked] = await Promise.all([
       courseIdsFor(participantId),
       isBlockedEitherDirection(user.id, participantId),
+      isGuardianLinked(user.id, participantId),
     ]);
-    if (!canMessageDirectly({ userACourseIds: myCourseIds, userBCourseIds: theirCourseIds, blockedEitherDirection: blocked })) {
-      throw new Error("Everyone in the group must be a classmate or your student/teacher");
+    if (
+      !canMessageDirectly({
+        userACourseIds: myCourseIds,
+        userBCourseIds: theirCourseIds,
+        isGuardianLinked: guardianLinked,
+        blockedEitherDirection: blocked,
+      })
+    ) {
+      throw new Error("Everyone in the group must be a classmate, your student/teacher, or a linked guardian");
     }
   }
 
@@ -146,6 +178,7 @@ const MAX_MESSAGE_LENGTH = 4000;
 export async function sendMessage(input: { conversationId: string; body: string }) {
   const user = await getCurrentDbUser();
   if (!user) throw new Error("Not signed in");
+  await enforceRateLimit(messageLimiter, user.id);
   if (!input.body.trim()) throw new Error("Message can't be empty");
   if (input.body.length > MAX_MESSAGE_LENGTH) {
     throw new Error(`Message is too long (max ${MAX_MESSAGE_LENGTH} characters)`);
@@ -223,6 +256,7 @@ export async function unblockUser(userId: string) {
 export async function reportMessage(input: { messageId: string; reason: string }) {
   const user = await getCurrentDbUser();
   if (!user) throw new Error("Not signed in");
+  await enforceRateLimit(sensitiveActionLimiter, user.id);
   if (!input.reason.trim()) throw new Error("Say what's wrong with this message");
 
   const message = await prisma.message.findUnique({ where: { id: input.messageId } });

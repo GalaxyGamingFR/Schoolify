@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { addDays, format, startOfDay, startOfWeek, subDays } from "date-fns";
 import { getCurrentDbUser } from "@/lib/current-user";
@@ -18,6 +19,11 @@ import { cn } from "@/lib/utils";
 const HEATMAP_DAYS = 28;
 const TREND_WINDOW_DAYS = 14;
 const VELOCITY_WEEKS = 4;
+
+export const metadata: Metadata = {
+  title: "Analytics",
+  description: "Workload heatmap, on-time completion rate, and risk alerts.",
+};
 
 export default async function AnalyticsPage() {
   const user = await getCurrentDbUser();

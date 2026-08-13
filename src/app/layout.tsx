@@ -16,8 +16,31 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Schoolify",
+  metadataBase: new URL("https://schoolify.tariqkhalif.me"),
+  title: {
+    default: "Schoolify",
+    template: "%s · Schoolify",
+  },
   description: "Make school easier, organized, and genuinely engaging.",
+};
+
+// Organization + WebSite, not LocalBusiness — Schoolify is a web app, not a
+// physical/local business, so LocalBusiness schema would be inaccurate.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      name: "Schoolify",
+      url: "https://schoolify.tariqkhalif.me",
+      description: "Make school easier, organized, and genuinely engaging.",
+    },
+    {
+      "@type": "WebSite",
+      name: "Schoolify",
+      url: "https://schoolify.tariqkhalif.me",
+    },
+  ],
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -29,6 +52,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         suppressHydrationWarning
       >
         <body className="min-h-full flex flex-col">
+          {/* Static, hardcoded JSON-LD — no user input reaches this, unlike every
+              other dangerouslySetInnerHTML this codebase deliberately avoids. */}
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             {children}
           </ThemeProvider>

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { format } from "date-fns";
 import { getCurrentDbUser } from "@/lib/current-user";
@@ -6,6 +7,11 @@ import { AppNav } from "@/components/app-nav";
 import { ReportActions } from "@/components/report-actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+
+export const metadata: Metadata = {
+  title: "Moderation",
+  description: "Review reported messages.",
+};
 
 export default async function ModerationPage() {
   const user = await getCurrentDbUser();

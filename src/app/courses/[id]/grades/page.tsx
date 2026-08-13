@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentDbUser } from "@/lib/current-user";
@@ -9,6 +10,11 @@ import { NewGradeCategoryForm } from "@/components/new-grade-category-form";
 import { WhatIfCalculator } from "@/components/what-if-calculator";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Course Grades",
+  description: "Grade categories and computed course grade.",
+};
 
 export default async function CourseGradesPage({
   params,

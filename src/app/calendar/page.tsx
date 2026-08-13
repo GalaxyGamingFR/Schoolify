@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
@@ -43,6 +44,11 @@ function shift(view: View, date: Date, direction: 1 | -1) {
   if (view === "week") return direction === 1 ? addWeeks(date, 1) : subWeeks(date, 1);
   return direction === 1 ? addMonths(date, 1) : subMonths(date, 1);
 }
+
+export const metadata: Metadata = {
+  title: "Calendar",
+  description: "Your assignments and events by month, week, or day.",
+};
 
 export default async function CalendarPage({
   searchParams,

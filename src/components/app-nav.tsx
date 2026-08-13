@@ -25,6 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getCurrentDbUser } from "@/lib/current-user";
+import { Logo } from "@/components/logo";
 
 const primaryLinks = [
   { href: "/dashboard", label: "Today", icon: Home },
@@ -61,8 +62,9 @@ export async function AppNav() {
       <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
         <Link
           href={isParent ? "/parent" : "/dashboard"}
-          className="text-lg font-semibold tracking-tight"
+          className="flex items-center gap-2 text-lg font-semibold tracking-tight"
         >
+          <Logo />
           Schoolify
         </Link>
         <nav className="flex items-center gap-1">

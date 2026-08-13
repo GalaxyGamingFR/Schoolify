@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
@@ -7,6 +8,11 @@ import { AppNav } from "@/components/app-nav";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MessageSquarePlus, Users } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Messages",
+  description: "Your conversations and class chats.",
+};
 
 export default async function MessagesPage() {
   const user = await getCurrentDbUser();

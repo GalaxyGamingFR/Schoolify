@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { format } from "date-fns";
@@ -6,6 +7,11 @@ import { prisma } from "@/lib/prisma";
 import { AppNav } from "@/components/app-nav";
 import { ArrowLeft } from "lucide-react";
 import { PrintButton } from "@/components/print-button";
+
+export const metadata: Metadata = {
+  title: "Resume",
+  description: "A printable resume built from your portfolio.",
+};
 
 export default async function ResumePage() {
   const user = await getCurrentDbUser();

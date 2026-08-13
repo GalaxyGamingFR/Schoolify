@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
@@ -5,6 +6,11 @@ import { AppNav } from "@/components/app-nav";
 import { NewUniversityTargetForm } from "@/components/new-university-target-form";
 import { UniversityTargetCard } from "@/components/university-target-card";
 import { Card, CardContent } from "@/components/ui/card";
+
+export const metadata: Metadata = {
+  title: "Applications",
+  description: "Track university applications and their checklists.",
+};
 
 export default async function ApplicationsPage() {
   const user = await getCurrentDbUser();

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
@@ -7,6 +8,11 @@ import { NewDegreeRequirementForm } from "@/components/new-degree-requirement-fo
 import { DegreeRequirementCard } from "@/components/degree-requirement-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+
+export const metadata: Metadata = {
+  title: "Degree Plan",
+  description: "Track your own custom degree requirements and credits.",
+};
 
 export default async function DegreePage() {
   const user = await getCurrentDbUser();

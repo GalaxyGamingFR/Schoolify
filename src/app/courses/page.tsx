@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentDbUser } from "@/lib/current-user";
@@ -8,6 +9,11 @@ import { JoinCourseForm } from "@/components/join-course-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { School } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Courses",
+  description: "Your classes, assignments, and grades by course.",
+};
 
 export default async function CoursesPage() {
   const user = await getCurrentDbUser();

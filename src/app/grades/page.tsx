@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentDbUser } from "@/lib/current-user";
@@ -5,6 +6,11 @@ import { prisma } from "@/lib/prisma";
 import { computeCourseGrade, computeGpa, letterGrade } from "@/lib/grades";
 import { AppNav } from "@/components/app-nav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+export const metadata: Metadata = {
+  title: "Grades",
+  description: "Your GPA and grades across all courses.",
+};
 
 export default async function GradesOverviewPage() {
   const user = await getCurrentDbUser();

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentDbUser } from "@/lib/current-user";
@@ -9,6 +10,11 @@ import { DeleteCourseButton } from "@/components/delete-course-button";
 import { ClassChatButton } from "@/components/class-chat-button";
 import { Button } from "@/components/ui/button";
 import { GraduationCap } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Course",
+  description: "Assignments and details for this course.",
+};
 
 export default async function CourseDetailPage({
   params,

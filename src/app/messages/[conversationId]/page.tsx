@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentDbUser } from "@/lib/current-user";
@@ -6,6 +7,11 @@ import { getMessagesSince, markConversationRead } from "@/lib/actions/messaging"
 import { AppNav } from "@/components/app-nav";
 import { MessageThread } from "@/components/message-thread";
 import { ArrowLeft } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Conversation",
+  description: "A Schoolify message thread.",
+};
 
 export default async function ConversationPage({
   params,

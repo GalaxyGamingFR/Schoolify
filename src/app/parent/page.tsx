@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentDbUser } from "@/lib/current-user";
@@ -6,6 +7,11 @@ import { AppNav } from "@/components/app-nav";
 import { RequestStudentLinkForm } from "@/components/request-student-link-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronRight, Clock } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Your Students",
+  description: "Students linked to your parent account.",
+};
 
 export default async function ParentPortalPage() {
   const user = await getCurrentDbUser();

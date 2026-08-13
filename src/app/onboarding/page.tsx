@@ -1,7 +1,13 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { OnboardingForm } from "@/components/onboarding-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+export const metadata: Metadata = {
+  title: "Welcome",
+  description: "Tell us who's using this account.",
+};
 
 export default async function OnboardingPage() {
   const user = await getCurrentDbUser();

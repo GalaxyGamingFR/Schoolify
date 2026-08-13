@@ -4,9 +4,9 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { completeOnboarding } from "@/lib/actions/onboarding";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+import { DateOfBirthPicker } from "@/components/date-of-birth-picker";
 import type { Role } from "@prisma/client";
 import { GraduationCap, Users } from "lucide-react";
 
@@ -61,14 +61,8 @@ export function OnboardingForm() {
       {role === "STUDENT" && (
         <Card>
           <CardContent className="space-y-2 py-4">
-            <Label htmlFor="dob">Date of birth</Label>
-            <Input
-              id="dob"
-              type="date"
-              value={dateOfBirth}
-              onChange={(e) => setDateOfBirth(e.target.value)}
-              max={new Date().toISOString().slice(0, 10)}
-            />
+            <Label>Date of birth</Label>
+            <DateOfBirthPicker value={dateOfBirth} onChange={setDateOfBirth} disabled={isPending} />
             <p className="text-xs text-muted-foreground">
               Used only to tailor the experience for younger students — see our approach to
               student privacy for accounts under 13.

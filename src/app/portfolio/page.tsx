@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { format } from "date-fns";
@@ -20,6 +21,11 @@ const CATEGORY_LABELS: Record<ActivityCategory, string> = {
   AWARD: "Award",
   WORK: "Work",
   OTHER: "Other",
+};
+
+export const metadata: Metadata = {
+  title: "Portfolio",
+  description: "Log activities and generate a resume.",
 };
 
 export default async function PortfolioPage() {

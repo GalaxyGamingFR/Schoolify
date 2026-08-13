@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentDbUser } from "@/lib/current-user";
@@ -9,6 +10,11 @@ import { CreateSchoolCourseForm } from "@/components/create-school-course-form";
 import { SchoolCourseCard } from "@/components/school-course-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "School",
+  description: "Staff and classes for this school.",
+};
 
 export default async function SchoolDetailPage({
   params,

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getCurrentDbUser } from "@/lib/current-user";
+import { enforceRateLimit, sensitiveActionLimiter } from "@/lib/rate-limit";
 
 // Acceptance authority always sits with the student — it's their data being
 // shared, so they're the one who has to consent, regardless of who
@@ -24,6 +25,7 @@ async function findUserByEmail(email: string) {
 export async function inviteGuardian(parentEmail: string) {
   const student = await getCurrentDbUser();
   if (!student) throw new Error("Not signed in");
+  await enforceRateLimit(sensitiveActionLimiter, student.id);
 
   const parent = await findUserByEmail(parentEmail);
   if (parent.id === student.id) throw new Error("You can't link yourself as your own guardian");
@@ -44,6 +46,7 @@ export async function inviteGuardian(parentEmail: string) {
 export async function requestStudentLink(studentEmail: string) {
   const parent = await getCurrentDbUser();
   if (!parent) throw new Error("Not signed in");
+  await enforceRateLimit(sensitiveActionLimiter, parent.id);
 
   const student = await findUserByEmail(studentEmail);
   if (student.id === parent.id) throw new Error("You can't link yourself as your own student");

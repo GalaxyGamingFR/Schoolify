@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { emailDomain, generateJoinCode, matchesSchoolDomain, normalizeDomain } from "@/lib/school";
+import { enforceRateLimit, joinCodeLimiter, sensitiveActionLimiter } from "@/lib/rate-limit";
 
 const MAX_JOIN_CODE_ATTEMPTS = 5;
 
@@ -25,6 +26,7 @@ async function requireActiveStaff(userId: string, schoolId: string) {
 export async function registerSchool(input: { name: string; domain: string }) {
   const user = await getCurrentDbUser();
   if (!user) throw new Error("Not signed in");
+  await enforceRateLimit(sensitiveActionLimiter, user.id);
   if (!input.name.trim()) throw new Error("School name is required");
 
   const domain = normalizeDomain(input.domain);
@@ -64,6 +66,7 @@ export async function claimSchoolInvites() {
 export async function inviteTeacher(schoolId: string, teacherEmail: string) {
   const user = await getCurrentDbUser();
   if (!user) throw new Error("Not signed in");
+  await enforceRateLimit(sensitiveActionLimiter, user.id);
   const staff = await requireActiveStaff(user.id, schoolId);
   if (staff.role !== "PRINCIPAL") throw new Error("Only a principal can invite teachers");
 
@@ -164,6 +167,11 @@ export async function regenerateJoinCode(courseId: string) {
 export async function joinCourseByCode(rawCode: string) {
   const user = await getCurrentDbUser();
   if (!user) throw new Error("Not signed in");
+  // Tighter than the other limiters on purpose — this is the one endpoint
+  // where the rate limit is load-bearing security, not just spam control:
+  // without it, an account could brute-force guess a valid 6-character
+  // join code (33^6 possibilities, but zero cost per guess otherwise).
+  await enforceRateLimit(joinCodeLimiter, user.id);
 
   const code = rawCode.trim().toUpperCase();
   if (!code) throw new Error("Enter a join code");
