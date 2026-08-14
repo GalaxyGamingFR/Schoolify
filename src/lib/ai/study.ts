@@ -1,13 +1,22 @@
 import "server-only";
 import { generateText, generateSpeech, Output } from "ai";
-import { google } from "@ai-sdk/google";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { z } from "zod";
 
 // Direct Google Gemini, not the Vercel AI Gateway -- Gemini has a genuinely
 // free tier with no credit card required, unlike the Gateway which refuses
-// to serve any request until a card is on file. Requires
-// GOOGLE_GENERATIVE_AI_API_KEY (from https://aistudio.google.com/apikey).
+// to serve any request until a card is on file. Reads GEMINI_API_KEY
+// (from https://aistudio.google.com/apikey) rather than the package's
+// default GOOGLE_GENERATIVE_AI_API_KEY, matching what's already in .env.
+export const google = createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY });
 const TEXT_MODEL = google("gemini-3.7-flash");
+
+// None of this app's generation tasks (reformatting notes, writing a quiz
+// from them, answering a question grounded in them) need Gemini's "thinking"
+// mode -- leaving it on burned ~80 reasoning tokens and ~90s on a two-word
+// reply in testing. Exported so the chat route (which builds its own
+// providerOptions for streamText) can reuse the same setting.
+export const NO_THINKING = { google: { thinkingConfig: { thinkingBudget: 0 } } };
 
 export type SourceInput = { title: string; content: string };
 
@@ -18,6 +27,7 @@ function materialBlock(sources: SourceInput[]) {
 export async function generateStudyNotes(sources: SourceInput[]): Promise<string> {
   const { text } = await generateText({
     model: TEXT_MODEL,
+    providerOptions: NO_THINKING,
     system:
       "You turn source material into clear, well-organized study notes in markdown: " +
       "headings, bullet points, **bolded** key terms and definitions. Be faithful to the " +
@@ -47,6 +57,7 @@ export type GeneratedQuiz = z.infer<typeof quizSchema>;
 export async function generateStudyQuiz(notes: string): Promise<GeneratedQuiz> {
   const { output } = await generateText({
     model: TEXT_MODEL,
+    providerOptions: NO_THINKING,
     output: Output.object({ schema: quizSchema }),
     prompt: `Generate a multiple-choice quiz (5-10 questions, 4 choices each, one correct) testing understanding of these study notes:\n\n${notes}`,
   });
@@ -66,6 +77,7 @@ export type GeneratedFlashcards = z.infer<typeof flashcardsSchema>;
 export async function generateStudyFlashcards(notes: string): Promise<GeneratedFlashcards> {
   const { output } = await generateText({
     model: TEXT_MODEL,
+    providerOptions: NO_THINKING,
     output: Output.object({ schema: flashcardsSchema }),
     prompt: `Generate flashcards (8-20 cards) covering the key terms and concepts in these study notes. Front = term or short question, back = a concise answer:\n\n${notes}`,
   });
@@ -75,6 +87,7 @@ export async function generateStudyFlashcards(notes: string): Promise<GeneratedF
 export async function generatePodcastScript(notes: string): Promise<string> {
   const { text } = await generateText({
     model: TEXT_MODEL,
+    providerOptions: NO_THINKING,
     system:
       "You write natural spoken-word scripts for a single narrator reading a friendly audio " +
       "summary of study material aloud. Conversational tone, plain prose only -- no markdown, " +
@@ -90,6 +103,7 @@ export async function generatePodcastScript(notes: string): Promise<string> {
 export async function transcribeAudioUrl(url: string, mediaType: string): Promise<string> {
   const { text } = await generateText({
     model: TEXT_MODEL,
+    providerOptions: NO_THINKING,
     messages: [
       {
         role: "user",
