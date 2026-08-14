@@ -1,4 +1,5 @@
 import { streamText, convertToModelMessages, type UIMessage } from "ai";
+import { google } from "@ai-sdk/google";
 import { NextResponse } from "next/server";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
@@ -32,7 +33,7 @@ export async function POST(request: Request) {
   }
 
   const result = streamText({
-    model: "anthropic/claude-sonnet-5",
+    model: google("gemini-3.7-flash"),
     system:
       "You are a study assistant helping a student understand their own notes below. " +
       "Answer questions clearly and concisely, grounded in these notes. If something isn't " +

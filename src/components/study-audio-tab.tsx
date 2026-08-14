@@ -30,7 +30,7 @@ export function StudyAudioTab() {
       const file = new File([blob], `recording.${ext}`, { type: mimeType });
       const uploaded = await upload(file.name, file, { access: "public", handleUploadUrl: "/api/study-upload" });
       setProgress("Transcribing and generating notes...");
-      const id = await createStudySetFromAudio({ title: "Recorded audio", blobUrl: uploaded.url });
+      const id = await createStudySetFromAudio({ title: "Recorded audio", blobUrl: uploaded.url, contentType: mimeType });
       router.push(`/study/${id}`);
     } catch (e) {
       setProgress(null);

@@ -1,8 +1,13 @@
 import "server-only";
-import { generateText, generateSpeech, transcribe, gateway, Output } from "ai";
+import { generateText, generateSpeech, Output } from "ai";
+import { google } from "@ai-sdk/google";
 import { z } from "zod";
 
-const TEXT_MODEL = "anthropic/claude-sonnet-5";
+// Direct Google Gemini, not the Vercel AI Gateway -- Gemini has a genuinely
+// free tier with no credit card required, unlike the Gateway which refuses
+// to serve any request until a card is on file. Requires
+// GOOGLE_GENERATIVE_AI_API_KEY (from https://aistudio.google.com/apikey).
+const TEXT_MODEL = google("gemini-3.7-flash");
 
 export type SourceInput = { title: string; content: string };
 
@@ -79,19 +84,30 @@ export async function generatePodcastScript(notes: string): Promise<string> {
   return text;
 }
 
-export async function transcribeAudioUrl(url: string): Promise<string> {
-  const result = await transcribe({
-    model: gateway.transcriptionModel("openai/whisper-1"),
-    audio: new URL(url),
+// Gemini has no separate "transcription model" endpoint like Whisper --
+// audio is just another input to the language model, so this asks it
+// directly for a verbatim transcript instead of calling a dedicated API.
+export async function transcribeAudioUrl(url: string, mediaType: string): Promise<string> {
+  const { text } = await generateText({
+    model: TEXT_MODEL,
+    messages: [
+      {
+        role: "user",
+        content: [
+          { type: "text", text: "Transcribe this audio verbatim. Return only the transcript, no commentary." },
+          { type: "file", data: new URL(url), mediaType },
+        ],
+      },
+    ],
   });
-  return result.text;
+  return text;
 }
 
 export async function synthesizeSpeech(text: string): Promise<{ bytes: Uint8Array; mediaType: string }> {
   const result = await generateSpeech({
-    model: gateway.speechModel("openai/tts-1"),
+    model: google.speech("gemini-3.1-flash-tts-preview"),
     text,
-    voice: "alloy",
+    voice: "Kore",
   });
   return { bytes: result.audio.uint8Array, mediaType: result.audio.mediaType };
 }

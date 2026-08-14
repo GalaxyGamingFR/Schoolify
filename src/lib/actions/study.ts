@@ -118,7 +118,7 @@ export async function createStudySetFromDocument(input: { title: string; blobUrl
   return studySet.id;
 }
 
-export async function createStudySetFromAudio(input: { title: string; blobUrl: string }) {
+export async function createStudySetFromAudio(input: { title: string; blobUrl: string; contentType: string }) {
   const user = await getCurrentDbUser();
   if (!user) throw new Error("Not signed in");
   await enforceRateLimit(aiGenerationLimiter, user.id);
@@ -127,7 +127,7 @@ export async function createStudySetFromAudio(input: { title: string; blobUrl: s
   }
 
   const title = input.title.trim() || "Untitled study set";
-  const content = await transcribeAudioUrl(input.blobUrl);
+  const content = await transcribeAudioUrl(input.blobUrl, input.contentType);
   const studySet = await createStudySet(user, title, {
     type: "AUDIO",
     title,
