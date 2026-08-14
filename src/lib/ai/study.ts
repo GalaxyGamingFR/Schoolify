@@ -58,6 +58,7 @@ export async function generateStudyNotes(sources: SourceInput[]): Promise<string
   const { text } = await generateTextResilient((model) =>
     generateText({
       model,
+      maxRetries: 1,
       providerOptions: NO_THINKING,
       system:
         "You turn source material into clear, well-organized study notes in markdown: " +
@@ -90,6 +91,7 @@ export async function generateStudyQuiz(notes: string): Promise<GeneratedQuiz> {
   const { output } = await generateTextResilient((model) =>
     generateText({
       model,
+      maxRetries: 1,
       providerOptions: NO_THINKING,
       output: Output.object({ schema: quizSchema }),
       prompt: `Generate a multiple-choice quiz (5-10 questions, 4 choices each, one correct) testing understanding of these study notes:\n\n${notes}`,
@@ -112,6 +114,7 @@ export async function generateStudyFlashcards(notes: string): Promise<GeneratedF
   const { output } = await generateTextResilient((model) =>
     generateText({
       model,
+      maxRetries: 1,
       providerOptions: NO_THINKING,
       output: Output.object({ schema: flashcardsSchema }),
       prompt: `Generate flashcards (8-20 cards) covering the key terms and concepts in these study notes. Front = term or short question, back = a concise answer:\n\n${notes}`,
@@ -124,6 +127,7 @@ export async function generatePodcastScript(notes: string): Promise<string> {
   const { text } = await generateTextResilient((model) =>
     generateText({
       model,
+      maxRetries: 1,
       providerOptions: NO_THINKING,
       system:
         "You write natural spoken-word scripts for a single narrator reading a friendly audio " +
@@ -137,7 +141,7 @@ export async function generatePodcastScript(notes: string): Promise<string> {
 
 export async function generateChatReply(system: string, messages: ModelMessage[]): Promise<string> {
   const { text } = await generateTextResilient((model) =>
-    generateText({ model, providerOptions: NO_THINKING, system, messages }),
+    generateText({ model, maxRetries: 1, providerOptions: NO_THINKING, system, messages }),
   );
   return text;
 }
@@ -155,7 +159,7 @@ export async function transcribeAudioUrl(url: string, mediaType: string): Promis
       ],
     },
   ];
-  const { text } = await generateTextResilient((model) => generateText({ model, providerOptions: NO_THINKING, messages }));
+  const { text } = await generateTextResilient((model) => generateText({ model, maxRetries: 1, providerOptions: NO_THINKING, messages }));
   return text;
 }
 
@@ -178,7 +182,7 @@ export async function transcribeYouTubeVideo(url: string): Promise<string> {
       ],
     },
   ];
-  const { text } = await generateTextResilient((model) => generateText({ model, providerOptions: NO_THINKING, messages }));
+  const { text } = await generateTextResilient((model) => generateText({ model, maxRetries: 1, providerOptions: NO_THINKING, messages }));
   return text;
 }
 
