@@ -6,6 +6,7 @@ import {
   generateQuizForStudySet,
   generateFlashcardsForStudySet,
   generatePodcastForStudySet,
+  type ActionResult,
 } from "@/lib/actions/study";
 import { Button } from "@/components/ui/button";
 import { ListChecks, Layers, Podcast, Loader2 } from "lucide-react";
@@ -18,14 +19,16 @@ export function StudyActions({ studySetId }: { studySetId: string }) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
-  function run(kind: Kind, action: () => Promise<string>, navigate: boolean) {
+  function run(kind: Kind, action: () => Promise<ActionResult<string>>, navigate: boolean) {
     setError(null);
     setPendingKind(kind);
     startTransition(async () => {
       try {
-        const id = await action();
-        if (navigate) {
-          router.push(`/study/${studySetId}/${kind}/${id}`);
+        const result = await action();
+        if (!result.ok) {
+          setError(result.error);
+        } else if (navigate) {
+          router.push(`/study/${studySetId}/${kind}/${result.data}`);
         } else {
           router.refresh();
         }

@@ -30,8 +30,13 @@ export function StudyAudioTab() {
       const file = new File([blob], `recording.${ext}`, { type: mimeType });
       const uploaded = await upload(file.name, file, { access: "public", handleUploadUrl: "/api/study-upload" });
       setProgress("Transcribing and generating notes...");
-      const id = await createStudySetFromAudio({ title: "Recorded audio", blobUrl: uploaded.url, contentType: mimeType });
-      router.push(`/study/${id}`);
+      const result = await createStudySetFromAudio({ title: "Recorded audio", blobUrl: uploaded.url, contentType: mimeType });
+      if (result.ok) {
+        router.push(`/study/${result.data}`);
+      } else {
+        setProgress(null);
+        setError(result.error);
+      }
     } catch (e) {
       setProgress(null);
       setError(e instanceof Error ? e.message : "Something went wrong");

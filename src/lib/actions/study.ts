@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { put } from "@vercel/blob";
 import { prisma } from "@/lib/prisma";
 import { getCurrentDbUser } from "@/lib/current-user";
-import { enforceRateLimit, aiGenerationLimiter } from "@/lib/rate-limit";
+import { enforceRateLimit, aiGenerationLimiter, RateLimitError } from "@/lib/rate-limit";
 import { extractDocumentText, extractWebsiteText, fetchYouTubeTitle, youTubeVideoId } from "@/lib/ai/extract";
 import {
   generateStudyNotes,
@@ -17,6 +17,15 @@ import {
   type SourceInput,
 } from "@/lib/ai/study";
 import type { StudySourceType } from "@prisma/client";
+
+// Next.js redacts thrown Server Action errors in production -- only a
+// generic digest crosses the client/server boundary, not the message, even
+// for a plain `new Error("friendly text")`. Confirmed live: a real 429 quota
+// error, thrown after being mapped to a clean message, still showed up
+// client-side as "Minified React error #441" with the real text nowhere to
+// be found. Returning a result object instead of throwing sidesteps that
+// redaction entirely, since the message travels as ordinary data.
+export type ActionResult<T> = { ok: true; data: T } | { ok: false; error: string };
 
 // Gemini's free tier has a real daily/per-minute quota -- once it's hit,
 // the SDK's own retry logic exhausts itself and throws an AI_RetryError
@@ -71,35 +80,39 @@ async function createStudySet(
   return studySet;
 }
 
-export async function createStudySetFromText(input: { title: string; text: string }) {
+export async function createStudySetFromText(input: { title: string; text: string }): Promise<ActionResult<string>> {
   const user = await getCurrentDbUser();
-  if (!user) throw new Error("Not signed in");
-  await enforceRateLimit(aiGenerationLimiter, user.id);
-  if (!input.text.trim()) throw new Error("Paste some text first");
+  if (!user) return { ok: false, error: "Not signed in" };
+  try {
+    await enforceRateLimit(aiGenerationLimiter, user.id);
+  } catch (e) {
+    return { ok: false, error: e instanceof RateLimitError ? e.message : "Rate limited" };
+  }
+  if (!input.text.trim()) return { ok: false, error: "Paste some text first" };
 
   const title = input.title.trim() || "Untitled study set";
-  const studySet = await createStudySet(user, title, {
-    type: "TEXT",
-    title,
-    content: input.text.trim(),
-  });
+  const studySet = await createStudySet(user, title, { type: "TEXT", title, content: input.text.trim() });
 
   await finishStudySet(studySet.id, [{ title, content: input.text.trim() }]);
-  return studySet.id;
+  return { ok: true, data: studySet.id };
 }
 
-export async function createStudySetFromLink(url: string) {
+export async function createStudySetFromLink(url: string): Promise<ActionResult<string>> {
   const user = await getCurrentDbUser();
-  if (!user) throw new Error("Not signed in");
-  await enforceRateLimit(aiGenerationLimiter, user.id);
+  if (!user) return { ok: false, error: "Not signed in" };
+  try {
+    await enforceRateLimit(aiGenerationLimiter, user.id);
+  } catch (e) {
+    return { ok: false, error: e instanceof RateLimitError ? e.message : "Rate limited" };
+  }
 
   let parsed: URL;
   try {
     parsed = new URL(url);
   } catch {
-    throw new Error("That doesn't look like a valid URL");
+    return { ok: false, error: "That doesn't look like a valid URL" };
   }
-  if (!["http:", "https:"].includes(parsed.protocol)) throw new Error("URL must be http or https");
+  if (!["http:", "https:"].includes(parsed.protocol)) return { ok: false, error: "URL must be http or https" };
 
   const videoId = youTubeVideoId(parsed.toString());
   let type: StudySourceType, title: string, content: string;
@@ -113,21 +126,29 @@ export async function createStudySetFromLink(url: string) {
       ({ title, content } = await extractWebsiteText(parsed.toString()));
     }
   } catch (e) {
-    throw new Error(friendlyAiError(e));
+    return { ok: false, error: friendlyAiError(e) };
   }
 
   const studySet = await createStudySet(user, title, { type, title, content, url: parsed.toString() });
 
   await finishStudySet(studySet.id, [{ title, content }]);
-  return studySet.id;
+  return { ok: true, data: studySet.id };
 }
 
-export async function createStudySetFromDocument(input: { title: string; blobUrl: string; contentType: string }) {
+export async function createStudySetFromDocument(input: {
+  title: string;
+  blobUrl: string;
+  contentType: string;
+}): Promise<ActionResult<string>> {
   const user = await getCurrentDbUser();
-  if (!user) throw new Error("Not signed in");
-  await enforceRateLimit(aiGenerationLimiter, user.id);
+  if (!user) return { ok: false, error: "Not signed in" };
+  try {
+    await enforceRateLimit(aiGenerationLimiter, user.id);
+  } catch (e) {
+    return { ok: false, error: e instanceof RateLimitError ? e.message : "Rate limited" };
+  }
   if (!new URL(input.blobUrl).hostname.endsWith(".public.blob.vercel-storage.com")) {
-    throw new Error("Invalid file");
+    return { ok: false, error: "Invalid file" };
   }
 
   const title = input.title.trim() || "Untitled study set";
@@ -135,7 +156,7 @@ export async function createStudySetFromDocument(input: { title: string; blobUrl
   try {
     content = await extractDocumentText(input.blobUrl, input.contentType);
   } catch (e) {
-    throw new Error(friendlyAiError(e));
+    return { ok: false, error: friendlyAiError(e) };
   }
   const studySet = await createStudySet(user, title, {
     type: "DOCUMENT",
@@ -145,15 +166,23 @@ export async function createStudySetFromDocument(input: { title: string; blobUrl
   });
 
   await finishStudySet(studySet.id, [{ title, content }]);
-  return studySet.id;
+  return { ok: true, data: studySet.id };
 }
 
-export async function createStudySetFromAudio(input: { title: string; blobUrl: string; contentType: string }) {
+export async function createStudySetFromAudio(input: {
+  title: string;
+  blobUrl: string;
+  contentType: string;
+}): Promise<ActionResult<string>> {
   const user = await getCurrentDbUser();
-  if (!user) throw new Error("Not signed in");
-  await enforceRateLimit(aiGenerationLimiter, user.id);
+  if (!user) return { ok: false, error: "Not signed in" };
+  try {
+    await enforceRateLimit(aiGenerationLimiter, user.id);
+  } catch (e) {
+    return { ok: false, error: e instanceof RateLimitError ? e.message : "Rate limited" };
+  }
   if (!new URL(input.blobUrl).hostname.endsWith(".public.blob.vercel-storage.com")) {
-    throw new Error("Invalid file");
+    return { ok: false, error: "Invalid file" };
   }
 
   const title = input.title.trim() || "Untitled study set";
@@ -161,7 +190,7 @@ export async function createStudySetFromAudio(input: { title: string; blobUrl: s
   try {
     content = await transcribeAudioUrl(input.blobUrl, input.contentType);
   } catch (e) {
-    throw new Error(friendlyAiError(e));
+    return { ok: false, error: friendlyAiError(e) };
   }
   const studySet = await createStudySet(user, title, {
     type: "AUDIO",
@@ -171,7 +200,7 @@ export async function createStudySetFromAudio(input: { title: string; blobUrl: s
   });
 
   await finishStudySet(studySet.id, [{ title, content }]);
-  return studySet.id;
+  return { ok: true, data: studySet.id };
 }
 
 export async function getStudySetStatus(studySetId: string) {
@@ -191,14 +220,22 @@ export async function deleteStudySet(studySetId: string) {
   revalidatePath("/study");
 }
 
-export async function generateQuizForStudySet(studySetId: string) {
+export async function generateQuizForStudySet(studySetId: string): Promise<ActionResult<string>> {
   const { user, studySet } = await requireOwner(studySetId);
-  await enforceRateLimit(aiGenerationLimiter, user.id);
-  if (!studySet.notes) throw new Error("Generate notes first");
+  try {
+    await enforceRateLimit(aiGenerationLimiter, user.id);
+  } catch (e) {
+    return { ok: false, error: e instanceof RateLimitError ? e.message : "Rate limited" };
+  }
+  if (!studySet.notes) return { ok: false, error: "Generate notes first" };
 
-  const generated = await generateStudyQuiz(studySet.notes).catch((e) => {
-    throw new Error(friendlyAiError(e));
-  });
+  let generated: Awaited<ReturnType<typeof generateStudyQuiz>>;
+  try {
+    generated = await generateStudyQuiz(studySet.notes);
+  } catch (e) {
+    return { ok: false, error: friendlyAiError(e) };
+  }
+
   const quiz = await prisma.studyQuiz.create({
     data: {
       studySetId,
@@ -208,17 +245,25 @@ export async function generateQuizForStudySet(studySetId: string) {
   });
 
   revalidatePath(`/study/${studySetId}`);
-  return quiz.id;
+  return { ok: true, data: quiz.id };
 }
 
-export async function generateFlashcardsForStudySet(studySetId: string) {
+export async function generateFlashcardsForStudySet(studySetId: string): Promise<ActionResult<string>> {
   const { user, studySet } = await requireOwner(studySetId);
-  await enforceRateLimit(aiGenerationLimiter, user.id);
-  if (!studySet.notes) throw new Error("Generate notes first");
+  try {
+    await enforceRateLimit(aiGenerationLimiter, user.id);
+  } catch (e) {
+    return { ok: false, error: e instanceof RateLimitError ? e.message : "Rate limited" };
+  }
+  if (!studySet.notes) return { ok: false, error: "Generate notes first" };
 
-  const generated = await generateStudyFlashcards(studySet.notes).catch((e) => {
-    throw new Error(friendlyAiError(e));
-  });
+  let generated: Awaited<ReturnType<typeof generateStudyFlashcards>>;
+  try {
+    generated = await generateStudyFlashcards(studySet.notes);
+  } catch (e) {
+    return { ok: false, error: friendlyAiError(e) };
+  }
+
   const deck = await prisma.studyFlashcardDeck.create({
     data: {
       studySetId,
@@ -228,13 +273,17 @@ export async function generateFlashcardsForStudySet(studySetId: string) {
   });
 
   revalidatePath(`/study/${studySetId}`);
-  return deck.id;
+  return { ok: true, data: deck.id };
 }
 
-export async function generatePodcastForStudySet(studySetId: string) {
+export async function generatePodcastForStudySet(studySetId: string): Promise<ActionResult<string>> {
   const { user, studySet } = await requireOwner(studySetId);
-  await enforceRateLimit(aiGenerationLimiter, user.id);
-  if (!studySet.notes) throw new Error("Generate notes first");
+  try {
+    await enforceRateLimit(aiGenerationLimiter, user.id);
+  } catch (e) {
+    return { ok: false, error: e instanceof RateLimitError ? e.message : "Rate limited" };
+  }
+  if (!studySet.notes) return { ok: false, error: "Generate notes first" };
 
   const podcast = await prisma.studyPodcast.create({
     data: { studySetId, title: `${studySet.title} — audio overview`, script: "", status: "PROCESSING" },
@@ -261,5 +310,5 @@ export async function generatePodcastForStudySet(studySetId: string) {
   }
 
   revalidatePath(`/study/${studySetId}`);
-  return podcast.id;
+  return { ok: true, data: podcast.id };
 }

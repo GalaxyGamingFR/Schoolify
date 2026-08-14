@@ -51,12 +51,17 @@ export function NewStudySetForm() {
           handleUploadUrl: "/api/study-upload",
         });
         setUploadProgress("Reading document and generating notes...");
-        const id = await createStudySetFromDocument({
+        const result = await createStudySetFromDocument({
           title: file.name.replace(/\.[^.]+$/, ""),
           blobUrl: blob.url,
           contentType: file.type,
         });
-        router.push(`/study/${id}`);
+        if (result.ok) {
+          router.push(`/study/${result.data}`);
+        } else {
+          setUploadProgress(null);
+          setError(result.error);
+        }
       } catch (e) {
         setUploadProgress(null);
         setError(e instanceof Error ? e.message : "Something went wrong");
@@ -90,11 +95,11 @@ export function NewStudySetForm() {
             if (!text.trim()) return;
             setError(null);
             startTransition(async () => {
-              try {
-                const id = await createStudySetFromText({ title, text });
-                router.push(`/study/${id}`);
-              } catch (e) {
-                setError(e instanceof Error ? e.message : "Something went wrong");
+              const result = await createStudySetFromText({ title, text });
+              if (result.ok) {
+                router.push(`/study/${result.data}`);
+              } else {
+                setError(result.error);
               }
             });
           }}
@@ -154,11 +159,11 @@ export function NewStudySetForm() {
             if (!url.trim()) return;
             setError(null);
             startTransition(async () => {
-              try {
-                const id = await createStudySetFromLink(url.trim());
-                router.push(`/study/${id}`);
-              } catch (e) {
-                setError(e instanceof Error ? e.message : "Something went wrong");
+              const result = await createStudySetFromLink(url.trim());
+              if (result.ok) {
+                router.push(`/study/${result.data}`);
+              } else {
+                setError(result.error);
               }
             });
           }}
