@@ -6,6 +6,7 @@ import { getCurrentDbUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import { computeTrend, bucketByDay, type Trend } from "@/lib/admin-stats";
 import { AppNav } from "@/components/app-nav";
+import { AppFooter } from "@/components/app-footer";
 import { ReportActions } from "@/components/report-actions";
 import { BroadcastForm } from "@/components/broadcast-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -239,6 +240,7 @@ export default async function ModerationPage() {
           )}
         </div>
       </main>
+      <AppFooter />
     </div>
   );
 }

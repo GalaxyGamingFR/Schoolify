@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import { AppNav } from "@/components/app-nav";
+import { AppFooter } from "@/components/app-footer";
 import { CommentForm } from "@/components/comment-form";
 import { BlogComment } from "@/components/blog-comment";
 import { DeletePostButton } from "@/components/delete-post-button";
@@ -90,6 +91,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ id: s
           ))}
         </div>
       </main>
+      <AppFooter />
     </div>
   );
 }

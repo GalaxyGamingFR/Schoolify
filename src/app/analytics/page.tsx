@@ -12,6 +12,7 @@ import {
   type RiskAlert,
 } from "@/lib/analytics";
 import { AppNav } from "@/components/app-nav";
+import { AppFooter } from "@/components/app-footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle, TrendingDown, CalendarClock } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -150,6 +151,7 @@ export default async function AnalyticsPage() {
           </p>
         )}
       </main>
+      <AppFooter />
     </div>
   );
 }

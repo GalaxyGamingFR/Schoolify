@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { getNotifications } from "@/lib/actions/notifications";
 import { AppNav } from "@/components/app-nav";
+import { AppFooter } from "@/components/app-footer";
 import { NotificationList } from "@/components/notification-list";
 
 export const metadata: Metadata = {
@@ -39,6 +40,7 @@ export default async function NotificationsPage() {
           />
         </div>
       </main>
+      <AppFooter />
     </div>
   );
 }

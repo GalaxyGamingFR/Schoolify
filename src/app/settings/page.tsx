@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { AppNav } from "@/components/app-nav";
+import { AppFooter } from "@/components/app-footer";
 import { NotificationPreferencesForm } from "@/components/notification-preferences-form";
 import { DateOfBirthSetting } from "@/components/date-of-birth-setting";
 import { ManageAccountButton, DeleteAccountButton } from "@/components/account-actions";
@@ -101,6 +102,7 @@ export default async function SettingsPage() {
           </CardContent>
         </Card>
       </main>
+      <AppFooter />
     </div>
   );
 }

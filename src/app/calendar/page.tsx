@@ -21,6 +21,7 @@ import {
 import { getCurrentDbUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import { AppNav } from "@/components/app-nav";
+import { AppFooter } from "@/components/app-footer";
 import { AssignmentRow } from "@/components/assignment-row";
 import { EventRow } from "@/components/event-row";
 import { NewEventForm } from "@/components/new-event-form";
@@ -180,6 +181,7 @@ export default async function CalendarPage({
           )}
         </div>
       </main>
+      <AppFooter />
     </div>
   );
 }

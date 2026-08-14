@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import { AppNav } from "@/components/app-nav";
+import { AppFooter } from "@/components/app-footer";
 import { OpportunityFilters } from "@/components/opportunity-filters";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -136,6 +137,7 @@ export default async function OpportunitiesPage({
           ))}
         </div>
       </main>
+      <AppFooter />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { formatDistanceToNow } from "date-fns";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import { AppNav } from "@/components/app-nav";
+import { AppFooter } from "@/components/app-footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MessageSquarePlus, Users } from "lucide-react";
@@ -119,6 +120,7 @@ export default async function MessagesPage() {
           )}
         </div>
       </main>
+      <AppFooter />
     </div>
   );
 }

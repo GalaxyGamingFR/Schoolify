@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import { AppNav } from "@/components/app-nav";
+import { AppFooter } from "@/components/app-footer";
 import { NewActivityForm } from "@/components/new-activity-form";
 import { DeleteActivityButton } from "@/components/delete-activity-button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -95,6 +96,7 @@ export default async function PortfolioPage() {
           )}
         </div>
       </main>
+      <AppFooter />
     </div>
   );
 }

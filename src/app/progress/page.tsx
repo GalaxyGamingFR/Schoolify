@@ -11,6 +11,7 @@ import {
   evaluateBadges,
 } from "@/lib/gamification";
 import { AppNav } from "@/components/app-nav";
+import { AppFooter } from "@/components/app-footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Flame, Trophy, Lock } from "lucide-react";
@@ -104,6 +105,7 @@ export default async function ProgressPage() {
           </p>
         )}
       </main>
+      <AppFooter />
     </div>
   );
 }

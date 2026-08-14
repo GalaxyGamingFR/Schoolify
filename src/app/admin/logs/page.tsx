@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { getLogEntries } from "@/lib/actions/admin-logs";
 import { AppNav } from "@/components/app-nav";
+import { AppFooter } from "@/components/app-footer";
 import { LiveLogConsole } from "@/components/live-log-console";
 import { ArrowLeft } from "lucide-react";
 
@@ -34,6 +35,7 @@ export default async function AdminLogsPage() {
 
         <LiveLogConsole initialEntries={initialEntries} />
       </main>
+      <AppFooter />
     </div>
   );
 }

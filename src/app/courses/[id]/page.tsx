@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import { AppNav } from "@/components/app-nav";
+import { AppFooter } from "@/components/app-footer";
 import { AssignmentRow } from "@/components/assignment-row";
 import { NewAssignmentForm } from "@/components/new-assignment-form";
 import { DeleteCourseButton } from "@/components/delete-course-button";
@@ -77,6 +78,7 @@ export default async function CourseDetailPage({
           )}
         </div>
       </main>
+      <AppFooter />
     </div>
   );
 }

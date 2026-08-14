@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import { AppNav } from "@/components/app-nav";
+import { AppFooter } from "@/components/app-footer";
 import { NewUniversityTargetForm } from "@/components/new-university-target-form";
 import { UniversityTargetCard } from "@/components/university-target-card";
 import { Card, CardContent } from "@/components/ui/card";
@@ -48,6 +49,7 @@ export default async function ApplicationsPage() {
           )}
         </div>
       </main>
+      <AppFooter />
     </div>
   );
 }

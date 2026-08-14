@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import { AppNav } from "@/components/app-nav";
+import { AppFooter } from "@/components/app-footer";
 import { PostForm } from "@/components/post-form";
 import { ArrowLeft } from "lucide-react";
 
@@ -34,6 +35,7 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
           <PostForm post={{ id: post.id, title: post.title, body: post.body }} />
         </div>
       </main>
+      <AppFooter />
     </div>
   );
 }

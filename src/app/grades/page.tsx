@@ -5,6 +5,7 @@ import { getCurrentDbUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import { computeCourseGrade, computeGpa, letterGrade } from "@/lib/grades";
 import { AppNav } from "@/components/app-nav";
+import { AppFooter } from "@/components/app-footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata: Metadata = {
@@ -86,6 +87,7 @@ export default async function GradesOverviewPage() {
           </CardContent>
         </Card>
       </main>
+      <AppFooter />
     </div>
   );
 }

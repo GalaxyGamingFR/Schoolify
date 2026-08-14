@@ -5,6 +5,7 @@ import { getCurrentDbUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import { computeCourseGrade, letterGrade } from "@/lib/grades";
 import { AppNav } from "@/components/app-nav";
+import { AppFooter } from "@/components/app-footer";
 import { GradeCategoryCard } from "@/components/grade-category-card";
 import { NewGradeCategoryForm } from "@/components/new-grade-category-form";
 import { WhatIfCalculator } from "@/components/what-if-calculator";
@@ -93,6 +94,7 @@ export default async function CourseGradesPage({
           </div>
         )}
       </main>
+      <AppFooter />
     </div>
   );
 }

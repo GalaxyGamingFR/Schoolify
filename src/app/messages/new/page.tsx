@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import { AppNav } from "@/components/app-nav";
+import { AppFooter } from "@/components/app-footer";
 import { NewConversationForm } from "@/components/new-conversation-form";
 
 export const metadata: Metadata = {
@@ -87,6 +88,7 @@ export default async function NewConversationPage() {
           )}
         </div>
       </main>
+      <AppFooter />
     </div>
   );
 }

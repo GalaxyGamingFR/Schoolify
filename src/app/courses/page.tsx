@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import { AppNav } from "@/components/app-nav";
+import { AppFooter } from "@/components/app-footer";
 import { NewCourseForm } from "@/components/new-course-form";
 import { JoinCourseForm } from "@/components/join-course-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -97,6 +98,7 @@ export default async function CoursesPage() {
           </div>
         )}
       </main>
+      <AppFooter />
     </div>
   );
 }

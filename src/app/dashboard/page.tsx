@@ -4,6 +4,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { addDays, endOfDay, isBefore, isToday, startOfDay } from "date-fns";
 import { AppNav } from "@/components/app-nav";
+import { AppFooter } from "@/components/app-footer";
 import { SyncingScreen } from "@/components/syncing-screen";
 import { QuickAddForm } from "@/components/quick-add-form";
 import { AssignmentRow } from "@/components/assignment-row";
@@ -33,6 +34,7 @@ export default async function DashboardPage() {
       <div className="flex flex-1 flex-col">
         <AppNav />
         <SyncingScreen />
+        <AppFooter />
       </div>
     );
   }
@@ -74,6 +76,7 @@ export default async function DashboardPage() {
             </CardContent>
           </Card>
         </main>
+        <AppFooter />
       </div>
     );
   }
@@ -161,6 +164,7 @@ export default async function DashboardPage() {
           <Section title="Next 7 days" assignments={upcoming} empty="Nothing coming up." />
         </div>
       </main>
+      <AppFooter />
     </div>
   );
 }

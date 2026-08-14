@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import { AppNav } from "@/components/app-nav";
+import { AppFooter } from "@/components/app-footer";
 import { RequestStudentLinkForm } from "@/components/request-student-link-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronRight, Clock } from "lucide-react";
@@ -81,6 +82,7 @@ export default async function ParentPortalPage() {
           </CardContent>
         </Card>
       </main>
+      <AppFooter />
     </div>
   );
 }

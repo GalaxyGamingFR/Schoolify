@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { AppNav } from "@/components/app-nav";
+import { AppFooter } from "@/components/app-footer";
 import { PostForm } from "@/components/post-form";
 import { ArrowLeft } from "lucide-react";
 
@@ -29,6 +30,7 @@ export default async function NewPostPage() {
           <PostForm />
         </div>
       </main>
+      <AppFooter />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { getCurrentDbUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import { getMessagesSince, markConversationRead } from "@/lib/actions/messaging";
 import { AppNav } from "@/components/app-nav";
+import { AppFooter } from "@/components/app-footer";
 import { MessageThread } from "@/components/message-thread";
 import { ArrowLeft } from "lucide-react";
 
@@ -76,6 +77,7 @@ export default async function ConversationPage({
           }))}
         />
       </main>
+      <AppFooter />
     </div>
   );
 }

@@ -9,6 +9,7 @@ import { computeCourseGrade, computeGpa, letterGrade } from "@/lib/grades";
 import { courseGradeTrend, buildRiskAlerts } from "@/lib/analytics";
 import { calculateLevel, calculateStreak, calculateXp } from "@/lib/gamification";
 import { AppNav } from "@/components/app-nav";
+import { AppFooter } from "@/components/app-footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle, ArrowLeft, Flame, TrendingDown } from "lucide-react";
 import { RemoveGuardianshipButton } from "@/components/remove-guardianship-button";
@@ -201,6 +202,7 @@ export default async function ParentStudentPage({
           )}
         </div>
       </main>
+      <AppFooter />
     </div>
   );
 }

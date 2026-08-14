@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import { AppNav } from "@/components/app-nav";
+import { AppFooter } from "@/components/app-footer";
 import { InviteTeacherForm } from "@/components/invite-teacher-form";
 import { StaffList } from "@/components/staff-list";
 import { CreateSchoolCourseForm } from "@/components/create-school-course-form";
@@ -118,6 +119,7 @@ export default async function SchoolDetailPage({
           </>
         )}
       </main>
+      <AppFooter />
     </div>
   );
 }

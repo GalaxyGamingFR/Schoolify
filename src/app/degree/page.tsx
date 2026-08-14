@@ -4,6 +4,7 @@ import { getCurrentDbUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import { overallProgress, isBlocked } from "@/lib/degree";
 import { AppNav } from "@/components/app-nav";
+import { AppFooter } from "@/components/app-footer";
 import { NewDegreeRequirementForm } from "@/components/new-degree-requirement-form";
 import { DegreeRequirementCard } from "@/components/degree-requirement-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -79,6 +80,7 @@ export default async function DegreePage() {
           )}
         </div>
       </main>
+      <AppFooter />
     </div>
   );
 }

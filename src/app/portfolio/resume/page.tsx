@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import { AppNav } from "@/components/app-nav";
+import { AppFooter } from "@/components/app-footer";
 import { ArrowLeft } from "lucide-react";
 import { PrintButton } from "@/components/print-button";
 
@@ -68,6 +69,9 @@ export default async function ResumePage() {
           )}
         </div>
       </main>
+      <div className="print:hidden">
+        <AppFooter />
+      </div>
     </div>
   );
 }

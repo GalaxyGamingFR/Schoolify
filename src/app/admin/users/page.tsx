@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import { AppNav } from "@/components/app-nav";
+import { AppFooter } from "@/components/app-footer";
 import { UserDirectoryFilters } from "@/components/user-directory-filters";
 import { UserDirectoryRow } from "@/components/user-directory-row";
 import { ArrowLeft } from "lucide-react";
@@ -66,6 +67,7 @@ export default async function AdminUsersPage({
           )}
         </div>
       </main>
+      <AppFooter />
     </div>
   );
 }

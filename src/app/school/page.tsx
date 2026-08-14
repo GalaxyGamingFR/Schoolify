@@ -5,6 +5,7 @@ import { getCurrentDbUser } from "@/lib/current-user";
 import { claimSchoolInvites } from "@/lib/actions/school";
 import { prisma } from "@/lib/prisma";
 import { AppNav } from "@/components/app-nav";
+import { AppFooter } from "@/components/app-footer";
 import { RegisterSchoolForm } from "@/components/register-school-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -69,6 +70,7 @@ export default async function SchoolHubPage() {
           </CardContent>
         </Card>
       </main>
+      <AppFooter />
     </div>
   );
 }
