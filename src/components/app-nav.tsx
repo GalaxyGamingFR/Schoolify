@@ -18,6 +18,7 @@ import {
   Settings,
   LayoutDashboard,
   ScrollText,
+  Sparkles,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,7 @@ const primaryLinks = [
 // Grouped into "More" once the primary set filled the header — see
 // roadmap.md Phase 5/7 notes on nav crowding.
 const moreLinks = [
+  { href: "/study", label: "AI Study", icon: Sparkles },
   { href: "/progress", label: "Progress", icon: Trophy },
   { href: "/analytics", label: "Analytics", icon: LineChart },
   { href: "/opportunities", label: "Opportunities", icon: Compass },

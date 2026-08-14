@@ -123,6 +123,8 @@ model User {
   blogComments         BlogComment[]
   blogCommentReactions BlogCommentReaction[]
 
+  studySets StudySet[]
+
   auditLogEntries AdminAuditLog[] @relation("AuditActor")
 
   @@index([role])
@@ -672,4 +674,137 @@ model Notification {
 
   @@index([userId, createdAt])
   @@index([userId, readAt])
+}
+
+// --- AI Study ---
+// Upload/paste/link source material, get AI-generated notes you can edit,
+// then ask questions about it and generate a quiz/flashcards/audio overview
+// from it. Each StudySet owns its sources and everything generated from
+// them; deleting it cascades all of that away with it.
+enum StudySourceType {
+  TEXT
+  DOCUMENT
+  AUDIO
+  YOUTUBE
+  WEBSITE
+}
+
+// Shared by StudySet's note-generation job and StudyPodcast's synthesis job
+// -- both are "kick off AI work, poll until it's done" flows.
+enum StudyJobStatus {
+  PENDING
+  PROCESSING
+  READY
+  FAILED
+}
+
+model StudySet {
+  id        String         @id @default(cuid())
+  owner     User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId   String
+  title     String
+  notes     String? // AI-generated markdown, then freely user-edited
+  status    StudyJobStatus @default(PENDING)
+  error     String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  sources  StudySource[]
+  messages StudyChatMessage[]
+  quizzes  StudyQuiz[]
+  decks    StudyFlashcardDeck[]
+  podcasts StudyPodcast[]
+
+  @@index([ownerId, createdAt])
+}
+
+model StudySource {
+  id         String          @id @default(cuid())
+  studySet   StudySet        @relation(fields: [studySetId], references: [id], onDelete: Cascade)
+  studySetId String
+  type       StudySourceType
+  title      String
+  // Extracted plain text actually fed to the model -- transcript for
+  // audio/YouTube, readable-text extraction for a website, parsed body for
+  // a document, or the pasted text itself.
+  content    String?
+  // Blob URL for an uploaded document/audio file, or the external
+  // YouTube/website URL. Null for pasted text.
+  url        String?
+  createdAt  DateTime        @default(now())
+
+  @@index([studySetId])
+}
+
+model StudyChatMessage {
+  id         String   @id @default(cuid())
+  studySet   StudySet @relation(fields: [studySetId], references: [id], onDelete: Cascade)
+  studySetId String
+  role       String // "user" | "assistant"
+  body       String
+  createdAt  DateTime @default(now())
+
+  @@index([studySetId, createdAt])
+}
+
+model StudyQuiz {
+  id         String              @id @default(cuid())
+  studySet   StudySet            @relation(fields: [studySetId], references: [id], onDelete: Cascade)
+  studySetId String
+  title      String
+  createdAt  DateTime            @default(now())
+  questions  StudyQuizQuestion[]
+
+  @@index([studySetId])
+}
+
+model StudyQuizQuestion {
+  id           String    @id @default(cuid())
+  quiz         StudyQuiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  quizId       String
+  question     String
+  choices      String[]
+  correctIndex Int
+  explanation  String?
+
+  @@index([quizId])
+}
+
+model StudyFlashcardDeck {
+  id         String           @id @default(cuid())
+  studySet   StudySet         @relation(fields: [studySetId], references: [id], onDelete: Cascade)
+  studySetId String
+  title      String
+  createdAt  DateTime         @default(now())
+  cards      StudyFlashcard[]
+
+  @@index([studySetId])
+}
+
+model StudyFlashcard {
+  id     String             @id @default(cuid())
+  deck   StudyFlashcardDeck @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  deckId String
+  front  String
+  back   String
+
+  @@index([deckId])
+}
+
+// A single-narrator "audio overview" of the notes (script generated first,
+// then synthesized to speech) -- not a multi-host conversational podcast,
+// which would need audio stitching across multiple TTS calls that nothing
+// in this stack currently supports.
+model StudyPodcast {
+  id         String         @id @default(cuid())
+  studySet   StudySet       @relation(fields: [studySetId], references: [id], onDelete: Cascade)
+  studySetId String
+  title      String
+  script     String
+  audioUrl   String?
+  status     StudyJobStatus @default(PENDING)
+  error      String?
+  createdAt  DateTime       @default(now())
+
+  @@index([studySetId])
 }

@@ -35,6 +35,13 @@ export const joinCodeLimiter = new Ratelimit({
   prefix: "ratelimit:joincode",
 });
 
+/** AI Study generation calls (notes/quiz/flashcards/podcast/chat) — these cost real money against a budget-capped Gateway key, tighter than a typical sensitive action. */
+export const aiGenerationLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(10, "60 s"),
+  prefix: "ratelimit:ai-study",
+});
+
 export class RateLimitError extends Error {
   constructor() {
     super("You're doing that too much — try again in a moment.");
