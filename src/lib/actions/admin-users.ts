@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getCurrentDbUser } from "@/lib/current-user";
+import { sendSuspensionEmail, sendReactivationEmail } from "@/lib/email";
 import type { Role } from "@prisma/client";
 
 async function requireAdmin() {
@@ -21,6 +22,7 @@ export async function suspendUser(userId: string) {
 
   const target = await prisma.user.update({ where: { id: userId }, data: { status: "SUSPENDED" } });
   await logAction(admin.id, "SUSPEND_USER", `Suspended ${target.name}`);
+  await sendSuspensionEmail(target.email, target.name);
   revalidatePath("/admin/users");
   revalidatePath("/moderation");
 }
@@ -29,6 +31,7 @@ export async function reactivateUser(userId: string) {
   const admin = await requireAdmin();
   const target = await prisma.user.update({ where: { id: userId }, data: { status: "ACTIVE" } });
   await logAction(admin.id, "REACTIVATE_USER", `Reactivated ${target.name}`);
+  await sendReactivationEmail(target.email, target.name);
   revalidatePath("/admin/users");
   revalidatePath("/moderation");
 }
