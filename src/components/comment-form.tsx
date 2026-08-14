@@ -7,7 +7,19 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
 
-export function CommentForm({ postId }: { postId: string }) {
+export function CommentForm({
+  postId,
+  parentId,
+  autoFocus,
+  placeholder = "Write a comment...",
+  onPosted,
+}: {
+  postId: string;
+  parentId?: string;
+  autoFocus?: boolean;
+  placeholder?: string;
+  onPosted?: () => void;
+}) {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const formRef = useRef<HTMLFormElement>(null);
@@ -22,9 +34,10 @@ export function CommentForm({ postId }: { postId: string }) {
         setError(null);
         startTransition(async () => {
           try {
-            await createComment({ postId, body });
+            await createComment({ postId, body, parentId });
             formRef.current?.reset();
             router.refresh();
+            onPosted?.();
           } catch (e) {
             setError(e instanceof Error ? e.message : "Something went wrong");
           }
@@ -33,7 +46,14 @@ export function CommentForm({ postId }: { postId: string }) {
       className="space-y-1"
     >
       <div className="flex gap-2">
-        <Input name="body" placeholder="Write a comment..." disabled={isPending} maxLength={2000} autoComplete="off" />
+        <Input
+          name="body"
+          placeholder={placeholder}
+          disabled={isPending}
+          maxLength={2000}
+          autoComplete="off"
+          autoFocus={autoFocus}
+        />
         <Button type="submit" size="icon" aria-label="Post comment" disabled={isPending}>
           <Send className="size-4" />
         </Button>

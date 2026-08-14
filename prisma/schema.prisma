@@ -119,8 +119,9 @@ model User {
   // from projectSpec.md's Content Manager). Deliberately not tied into
   // Notification/Broadcast -- pull content you browse, not push, so admins
   // posting regularly doesn't spam everyone the way a broadcast would.
-  blogPosts    BlogPost[]
-  blogComments BlogComment[]
+  blogPosts            BlogPost[]
+  blogComments         BlogComment[]
+  blogCommentReactions BlogCommentReaction[]
 
   auditLogEntries AdminAuditLog[] @relation("AuditActor")
 
@@ -168,7 +169,30 @@ model BlogComment {
   body      String
   createdAt DateTime @default(now())
 
+  // One level of nesting only -- a reply can't itself be replied to, kept
+  // simple like YouTube/Reddit-lite rather than arbitrary-depth threads.
+  parent    BlogComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  parentId  String?
+  replies   BlogComment[] @relation("CommentReplies")
+  reactions BlogCommentReaction[]
+
   @@index([postId, createdAt])
+  @@index([parentId])
+}
+
+model BlogCommentReaction {
+  id        String      @id @default(cuid())
+  comment   BlogComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  commentId String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  emoji     String
+  createdAt DateTime    @default(now())
+
+  // One user can react to the same comment with several different emoji
+  // (Slack/Discord-style), but not stack the same emoji twice.
+  @@unique([commentId, userId, emoji])
+  @@index([commentId])
 }
 
 model Guardianship {

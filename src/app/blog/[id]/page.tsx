@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { format, formatDistanceToNow } from "date-fns";
+import { format } from "date-fns";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import { AppNav } from "@/components/app-nav";
 import { CommentForm } from "@/components/comment-form";
-import { DeleteCommentButton } from "@/components/delete-comment-button";
+import { BlogComment } from "@/components/blog-comment";
 import { DeletePostButton } from "@/components/delete-post-button";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Pencil } from "lucide-react";
@@ -21,13 +21,30 @@ export default async function BlogPostPage({ params }: { params: Promise<{ id: s
   if (!user) redirect("/sign-in");
 
   const { id } = await params;
-  const post = await prisma.blogPost.findUnique({
-    where: { id },
-    include: {
-      author: { select: { name: true } },
-      comments: { include: { author: { select: { name: true } } }, orderBy: { createdAt: "asc" } },
-    },
-  });
+  const [post, totalComments] = await Promise.all([
+    prisma.blogPost.findUnique({
+      where: { id },
+      include: {
+        author: { select: { name: true } },
+        comments: {
+          where: { parentId: null },
+          include: {
+            author: { select: { name: true } },
+            reactions: { select: { emoji: true, userId: true } },
+            replies: {
+              include: {
+                author: { select: { name: true } },
+                reactions: { select: { emoji: true, userId: true } },
+              },
+              orderBy: { createdAt: "asc" },
+            },
+          },
+          orderBy: { createdAt: "asc" },
+        },
+      },
+    }),
+    prisma.blogComment.count({ where: { postId: id } }),
+  ]);
   if (!post) notFound();
 
   const isAdmin = user.role === "ADMIN";
@@ -61,7 +78,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ id: s
         <p className="mt-6 whitespace-pre-wrap text-sm leading-relaxed">{post.body}</p>
 
         <h2 className="mt-10 text-sm font-semibold text-muted-foreground">
-          {post.comments.length} comment{post.comments.length === 1 ? "" : "s"}
+          {totalComments} comment{totalComments === 1 ? "" : "s"}
         </h2>
         <div className="mt-3">
           <CommentForm postId={post.id} />
@@ -69,18 +86,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ id: s
 
         <div className="mt-4 space-y-3">
           {post.comments.map((c) => (
-            <div key={c.id} className="flex items-start justify-between gap-2 border-b pb-3 last:border-none">
-              <div className="text-sm">
-                <p className="font-medium">
-                  {c.author.name}{" "}
-                  <span className="font-normal text-muted-foreground">
-                    · {formatDistanceToNow(c.createdAt, { addSuffix: true })}
-                  </span>
-                </p>
-                <p className="mt-0.5">{c.body}</p>
-              </div>
-              {(c.authorId === user.id || isAdmin) && <DeleteCommentButton commentId={c.id} />}
-            </div>
+            <BlogComment key={c.id} comment={c} postId={post.id} currentUserId={user.id} isAdmin={isAdmin} />
           ))}
         </div>
       </main>

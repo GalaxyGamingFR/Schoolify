@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { enforceRateLimit, sensitiveActionLimiter } from "@/lib/rate-limit";
+import { REACTION_EMOJI } from "@/lib/blog-reactions";
 
 async function requireAdmin() {
   const user = await getCurrentDbUser();
@@ -42,7 +43,7 @@ export async function deletePost(postId: string) {
   revalidatePath("/blog");
 }
 
-export async function createComment(input: { postId: string; body: string }) {
+export async function createComment(input: { postId: string; body: string; parentId?: string }) {
   const user = await getCurrentDbUser();
   if (!user) throw new Error("Not signed in");
   await enforceRateLimit(sensitiveActionLimiter, user.id);
@@ -51,12 +52,44 @@ export async function createComment(input: { postId: string; body: string }) {
   const post = await prisma.blogPost.findUnique({ where: { id: input.postId } });
   if (!post) throw new Error("Post not found");
 
+  if (input.parentId) {
+    const parent = await prisma.blogComment.findUnique({ where: { id: input.parentId } });
+    if (!parent || parent.postId !== input.postId) throw new Error("Comment not found");
+    if (parent.parentId) throw new Error("Can't reply to a reply");
+  }
+
   const comment = await prisma.blogComment.create({
-    data: { postId: input.postId, authorId: user.id, body: input.body.trim() },
+    data: {
+      postId: input.postId,
+      authorId: user.id,
+      body: input.body.trim(),
+      parentId: input.parentId,
+    },
   });
 
   revalidatePath(`/blog/${input.postId}`);
   return comment;
+}
+
+export async function toggleCommentReaction(commentId: string, emoji: string) {
+  const user = await getCurrentDbUser();
+  if (!user) throw new Error("Not signed in");
+  if (!(REACTION_EMOJI as readonly string[]).includes(emoji)) throw new Error("Invalid reaction");
+
+  const comment = await prisma.blogComment.findUnique({ where: { id: commentId } });
+  if (!comment) throw new Error("Comment not found");
+
+  const existing = await prisma.blogCommentReaction.findUnique({
+    where: { commentId_userId_emoji: { commentId, userId: user.id, emoji } },
+  });
+
+  if (existing) {
+    await prisma.blogCommentReaction.delete({ where: { id: existing.id } });
+  } else {
+    await prisma.blogCommentReaction.create({ data: { commentId, userId: user.id, emoji } });
+  }
+
+  revalidatePath(`/blog/${comment.postId}`);
 }
 
 export async function deleteComment(commentId: string) {

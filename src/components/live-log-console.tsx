@@ -104,8 +104,8 @@ export function LiveLogConsole({ initialEntries }: { initialEntries: LogEntry[] 
               )}
             >
               <span className="shrink-0 text-zinc-600">[{timeOf(e.at)}]</span>
-              <span className={cn("shrink-0 font-semibold", LEVEL_STYLE[e.level])}>
-                [{e.level.padEnd(5, " ")}]
+              <span className={cn("shrink-0 w-16 font-semibold", LEVEL_STYLE[e.level])}>
+                [{e.level}]
               </span>
               <span className="text-zinc-300">{e.message}</span>
             </div>

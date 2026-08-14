@@ -23,17 +23,18 @@ export default function OpengraphImage() {
             display: "flex",
             width: 96,
             height: 96,
-            alignItems: "center",
+            alignItems: "flex-end",
             justifyContent: "center",
+            gap: "10%",
             background: "#4f46e5",
             borderRadius: 22,
-            color: "white",
-            fontSize: 56,
-            fontWeight: 700,
+            padding: "18% 18% 14%",
             marginBottom: 32,
           }}
         >
-          S
+          <div style={{ width: "20%", height: "38%", borderRadius: 999, background: "white" }} />
+          <div style={{ width: "20%", height: "64%", borderRadius: 999, background: "white" }} />
+          <div style={{ width: "20%", height: "90%", borderRadius: 999, background: "white" }} />
         </div>
         <div style={{ display: "flex", fontSize: 72, fontWeight: 700, color: "#f4f4f5" }}>
           Schoolify
