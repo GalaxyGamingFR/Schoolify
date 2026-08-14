@@ -18,6 +18,20 @@ import {
 } from "@/lib/ai/study";
 import type { StudySourceType } from "@prisma/client";
 
+// Gemini's free tier has a real daily/per-minute quota -- once it's hit,
+// the SDK's own retry logic exhausts itself and throws an AI_RetryError
+// wrapping AI_APICallError with a 429/RESOURCE_EXHAUSTED body. Surfacing
+// that raw message ("Resource has been exhausted (e.g. check quota)")
+// isn't useful to a student, so this maps it to something that actually
+// explains what happened.
+function friendlyAiError(e: unknown): string {
+  const message = e instanceof Error ? e.message : String(e);
+  if (/RESOURCE_EXHAUSTED|429|quota/i.test(message)) {
+    return "Hit today's free AI usage limit — try again in a bit.";
+  }
+  return message || "Something went wrong";
+}
+
 async function requireOwner(studySetId: string) {
   const user = await getCurrentDbUser();
   if (!user) throw new Error("Not signed in");
@@ -36,7 +50,7 @@ async function finishStudySet(studySetId: string, sources: SourceInput[]) {
   } catch (e) {
     await prisma.studySet.update({
       where: { id: studySetId },
-      data: { status: "FAILED", error: e instanceof Error ? e.message : "Generation failed" },
+      data: { status: "FAILED", error: friendlyAiError(e) },
     });
   }
 }
@@ -88,13 +102,19 @@ export async function createStudySetFromLink(url: string) {
   if (!["http:", "https:"].includes(parsed.protocol)) throw new Error("URL must be http or https");
 
   const videoId = youTubeVideoId(parsed.toString());
-  const { type, title, content } = videoId
-    ? {
-        type: "YOUTUBE" as const,
-        title: await fetchYouTubeTitle(videoId),
-        content: await transcribeYouTubeVideo(parsed.toString()),
-      }
-    : { type: "WEBSITE" as const, ...(await extractWebsiteText(parsed.toString())) };
+  let type: StudySourceType, title: string, content: string;
+  try {
+    if (videoId) {
+      type = "YOUTUBE";
+      title = await fetchYouTubeTitle(videoId);
+      content = await transcribeYouTubeVideo(parsed.toString());
+    } else {
+      type = "WEBSITE";
+      ({ title, content } = await extractWebsiteText(parsed.toString()));
+    }
+  } catch (e) {
+    throw new Error(friendlyAiError(e));
+  }
 
   const studySet = await createStudySet(user, title, { type, title, content, url: parsed.toString() });
 
@@ -111,7 +131,12 @@ export async function createStudySetFromDocument(input: { title: string; blobUrl
   }
 
   const title = input.title.trim() || "Untitled study set";
-  const content = await extractDocumentText(input.blobUrl, input.contentType);
+  let content: string;
+  try {
+    content = await extractDocumentText(input.blobUrl, input.contentType);
+  } catch (e) {
+    throw new Error(friendlyAiError(e));
+  }
   const studySet = await createStudySet(user, title, {
     type: "DOCUMENT",
     title,
@@ -132,7 +157,12 @@ export async function createStudySetFromAudio(input: { title: string; blobUrl: s
   }
 
   const title = input.title.trim() || "Untitled study set";
-  const content = await transcribeAudioUrl(input.blobUrl, input.contentType);
+  let content: string;
+  try {
+    content = await transcribeAudioUrl(input.blobUrl, input.contentType);
+  } catch (e) {
+    throw new Error(friendlyAiError(e));
+  }
   const studySet = await createStudySet(user, title, {
     type: "AUDIO",
     title,
@@ -166,7 +196,9 @@ export async function generateQuizForStudySet(studySetId: string) {
   await enforceRateLimit(aiGenerationLimiter, user.id);
   if (!studySet.notes) throw new Error("Generate notes first");
 
-  const generated = await generateStudyQuiz(studySet.notes);
+  const generated = await generateStudyQuiz(studySet.notes).catch((e) => {
+    throw new Error(friendlyAiError(e));
+  });
   const quiz = await prisma.studyQuiz.create({
     data: {
       studySetId,
@@ -184,7 +216,9 @@ export async function generateFlashcardsForStudySet(studySetId: string) {
   await enforceRateLimit(aiGenerationLimiter, user.id);
   if (!studySet.notes) throw new Error("Generate notes first");
 
-  const generated = await generateStudyFlashcards(studySet.notes);
+  const generated = await generateStudyFlashcards(studySet.notes).catch((e) => {
+    throw new Error(friendlyAiError(e));
+  });
   const deck = await prisma.studyFlashcardDeck.create({
     data: {
       studySetId,
@@ -222,7 +256,7 @@ export async function generatePodcastForStudySet(studySetId: string) {
   } catch (e) {
     await prisma.studyPodcast.update({
       where: { id: podcast.id },
-      data: { status: "FAILED", error: e instanceof Error ? e.message : "Generation failed" },
+      data: { status: "FAILED", error: friendlyAiError(e) },
     });
   }
 
