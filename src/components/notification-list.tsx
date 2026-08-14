@@ -6,7 +6,7 @@ import { formatDistanceToNow } from "date-fns";
 import { markAllNotificationsRead, markNotificationRead } from "@/lib/actions/notifications";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { MessageSquare, Users, GraduationCap, Bell } from "lucide-react";
+import { MessageSquare, Users, GraduationCap, Megaphone, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { NotificationType } from "@prisma/client";
 
@@ -15,6 +15,7 @@ const TYPE_ICONS: Record<NotificationType, typeof Bell> = {
   GUARDIANSHIP_REQUEST: Users,
   GUARDIANSHIP_ACCEPTED: Users,
   SCHOOL_INVITE: GraduationCap,
+  BROADCAST: Megaphone,
 };
 
 type NotificationItem = {

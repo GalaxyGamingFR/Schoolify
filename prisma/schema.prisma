@@ -557,6 +557,7 @@ enum NotificationType {
   GUARDIANSHIP_REQUEST
   GUARDIANSHIP_ACCEPTED
   SCHOOL_INVITE
+  BROADCAST
 }
 
 model Notification {

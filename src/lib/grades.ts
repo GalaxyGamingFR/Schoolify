@@ -82,3 +82,43 @@ export function computeGpa(coursePercents: number[]): number | null {
   const total = coursePercents.reduce((sum, p) => sum + gpaPoints(p), 0);
   return total / coursePercents.length;
 }
+
+/**
+ * The reverse of `computeCourseGrade`: score (0-100, before that category's
+ * curve) needed on a not-yet-taken assignment worth `newAssignmentPossible`
+ * points, in `targetCategory`, to bring the whole course to
+ * `targetOverallPercent`. `otherCategories` are used as-is (their current
+ * percent). Assumes the new assignment isn't the category's dropped-lowest
+ * score -- a reasonable assumption for a final/major exam, but the UI
+ * should say so since `dropLowestN` could otherwise make this exact for the
+ * wrong reason. Returns null if the target category has no weight or the
+ * assignment is worth 0 points (neither can move the grade by definition).
+ */
+export function requiredScoreForTarget(params: {
+  otherCategories: GradeCategoryInput[];
+  targetCategory: GradeCategoryInput;
+  newAssignmentPossible: number;
+  targetOverallPercent: number;
+}): number | null {
+  const { otherCategories, targetCategory, newAssignmentPossible, targetOverallPercent } = params;
+  if (targetCategory.weight <= 0 || newAssignmentPossible <= 0) return null;
+
+  const others = otherCategories
+    .map((c) => ({ weight: c.weight, percent: computeCategoryPercent(c) }))
+    .filter((c): c is { weight: number; percent: number } => c.percent !== null);
+
+  const otherWeightedSum = others.reduce((sum, c) => sum + c.weight * c.percent, 0);
+  const otherWeight = others.reduce((sum, c) => sum + c.weight, 0);
+  const totalWeight = otherWeight + targetCategory.weight;
+
+  const neededCategoryPercent =
+    (targetOverallPercent * totalWeight - otherWeightedSum) / targetCategory.weight;
+
+  const existingEarned = targetCategory.gradeEntries.reduce((s, e) => s + e.pointsEarned, 0);
+  const existingPossible = targetCategory.gradeEntries.reduce((s, e) => s + e.pointsPossible, 0);
+
+  const rawFraction = (neededCategoryPercent - targetCategory.curveAdjustment) / 100;
+  const requiredEarned = rawFraction * (existingPossible + newAssignmentPossible) - existingEarned;
+
+  return (requiredEarned / newAssignmentPossible) * 100;
+}

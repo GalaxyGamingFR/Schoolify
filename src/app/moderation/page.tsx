@@ -5,12 +5,13 @@ import { getCurrentDbUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import { AppNav } from "@/components/app-nav";
 import { ReportActions } from "@/components/report-actions";
+import { BroadcastForm } from "@/components/broadcast-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 export const metadata: Metadata = {
   title: "Moderation",
-  description: "Review reported messages.",
+  description: "Review reported messages and send platform-wide announcements.",
 };
 
 export default async function ModerationPage() {
@@ -34,10 +35,21 @@ export default async function ModerationPage() {
     <div className="flex flex-1 flex-col">
       <AppNav />
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8">
-        <h1 className="text-3xl font-bold tracking-tight">Moderation queue</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{reports.length} open report{reports.length === 1 ? "" : "s"}</p>
+        <h1 className="text-3xl font-bold tracking-tight">Moderation</h1>
 
-        <div className="mt-6 space-y-3">
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="text-base">Broadcast an announcement</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <BroadcastForm />
+          </CardContent>
+        </Card>
+
+        <h2 className="mt-8 text-sm font-semibold text-muted-foreground">
+          {reports.length} open report{reports.length === 1 ? "" : "s"}
+        </h2>
+        <div className="mt-2 space-y-3">
           {reports.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nothing to review.</p>
           ) : (

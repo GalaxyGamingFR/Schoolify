@@ -8,6 +8,7 @@ import { AppNav } from "@/components/app-nav";
 import { GradeCategoryCard } from "@/components/grade-category-card";
 import { NewGradeCategoryForm } from "@/components/new-grade-category-form";
 import { WhatIfCalculator } from "@/components/what-if-calculator";
+import { GradeOptimizer } from "@/components/grade-optimizer";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
@@ -86,8 +87,9 @@ export default async function CourseGradesPage({
         </div>
 
         {course.gradeCategories.length > 0 && (
-          <div className="mt-6">
+          <div className="mt-6 grid gap-4 sm:grid-cols-2">
             <WhatIfCalculator categories={course.gradeCategories} />
+            <GradeOptimizer categories={course.gradeCategories} />
           </div>
         )}
       </main>
