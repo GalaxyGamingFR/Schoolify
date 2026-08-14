@@ -75,6 +75,7 @@ export function UniversityTargetCard({ target }: { target: Target }) {
                   router.refresh();
                 })
               }
+              items={STATUS_LABELS}
             >
               <SelectTrigger size="sm">
                 <SelectValue />

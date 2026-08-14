@@ -49,6 +49,12 @@ export function OpportunityFilters({
 
   const hasFilters = !!(subject || grade || q || scholarship);
 
+  const subjectItems = { ALL: "All subjects", ...SUBJECT_LABELS };
+  const gradeItems = {
+    ALL: "Any grade",
+    ...Object.fromEntries(Array.from({ length: 12 }, (_, i) => i + 1).map((g) => [String(g), `Grade ${g}`])),
+  };
+
   return (
     <div className="space-y-2">
       <form
@@ -66,7 +72,11 @@ export function OpportunityFilters({
       </form>
 
       <div className="flex flex-wrap gap-2">
-        <Select value={subject ?? "ALL"} onValueChange={(v) => updateParam("subject", v === "ALL" ? null : v)}>
+        <Select
+          value={subject ?? "ALL"}
+          onValueChange={(v) => updateParam("subject", v === "ALL" ? null : v)}
+          items={subjectItems}
+        >
           <SelectTrigger className="w-44">
             <SelectValue placeholder="All subjects" />
           </SelectTrigger>
@@ -80,7 +90,11 @@ export function OpportunityFilters({
           </SelectContent>
         </Select>
 
-        <Select value={grade ?? "ALL"} onValueChange={(v) => updateParam("grade", v === "ALL" ? null : v)}>
+        <Select
+          value={grade ?? "ALL"}
+          onValueChange={(v) => updateParam("grade", v === "ALL" ? null : v)}
+          items={gradeItems}
+        >
           <SelectTrigger className="w-32">
             <SelectValue placeholder="Any grade" />
           </SelectTrigger>

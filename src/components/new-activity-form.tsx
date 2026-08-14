@@ -75,7 +75,7 @@ export function NewActivityForm() {
         </div>
         <div>
           <label className="text-xs text-muted-foreground">Category</label>
-          <Select value={category} onValueChange={(v) => setCategory(v as ActivityCategory)}>
+          <Select value={category} onValueChange={(v) => setCategory(v as ActivityCategory)} items={CATEGORY_LABELS}>
             <SelectTrigger className="w-full">
               <SelectValue />
             </SelectTrigger>

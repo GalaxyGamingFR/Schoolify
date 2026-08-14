@@ -26,6 +26,12 @@ const TYPES: AssignmentType[] = [
 ];
 const PRIORITIES: Priority[] = ["LOW", "MEDIUM", "HIGH"];
 
+function titleCase(s: string) {
+  return s.charAt(0) + s.slice(1).toLowerCase();
+}
+const TYPE_ITEMS = Object.fromEntries(TYPES.map((t) => [t, titleCase(t)]));
+const PRIORITY_ITEMS = Object.fromEntries(PRIORITIES.map((p) => [p, titleCase(p)]));
+
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -73,14 +79,14 @@ export function NewAssignmentForm({ courseId }: { courseId: string }) {
       </div>
       <div>
         <label className="text-xs text-muted-foreground">Type</label>
-        <Select value={type} onValueChange={(v) => setType(v as AssignmentType)}>
+        <Select value={type} onValueChange={(v) => setType(v as AssignmentType)} items={TYPE_ITEMS}>
           <SelectTrigger className="w-32">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {TYPES.map((t) => (
               <SelectItem key={t} value={t}>
-                {t.charAt(0) + t.slice(1).toLowerCase()}
+                {TYPE_ITEMS[t]}
               </SelectItem>
             ))}
           </SelectContent>
@@ -88,14 +94,14 @@ export function NewAssignmentForm({ courseId }: { courseId: string }) {
       </div>
       <div>
         <label className="text-xs text-muted-foreground">Priority</label>
-        <Select value={priority} onValueChange={(v) => setPriority(v as Priority)}>
+        <Select value={priority} onValueChange={(v) => setPriority(v as Priority)} items={PRIORITY_ITEMS}>
           <SelectTrigger className="w-28">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {PRIORITIES.map((p) => (
               <SelectItem key={p} value={p}>
-                {p.charAt(0) + p.slice(1).toLowerCase()}
+                {PRIORITY_ITEMS[p]}
               </SelectItem>
             ))}
           </SelectContent>

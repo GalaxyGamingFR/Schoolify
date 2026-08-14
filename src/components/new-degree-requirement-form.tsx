@@ -58,7 +58,11 @@ export function NewDegreeRequirementForm({
         <Input name="creditsRequired" type="number" min={0.5} step={0.5} placeholder="Credits" disabled={isPending} />
       </div>
       {existing.length > 0 && (
-        <Select value={requiresId} onValueChange={(v) => setRequiresId(v ?? "NONE")}>
+        <Select
+          value={requiresId}
+          onValueChange={(v) => setRequiresId(v ?? "NONE")}
+          items={{ NONE: "No prerequisite", ...Object.fromEntries(existing.map((r) => [r.id, r.label])) }}
+        >
           <SelectTrigger className="w-full sm:w-64">
             <SelectValue placeholder="Requires (optional)" />
           </SelectTrigger>

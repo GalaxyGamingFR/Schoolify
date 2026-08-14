@@ -48,6 +48,8 @@ export function WhatIfCalculator({ categories }: { categories: Category[] }) {
 
   if (categories.length === 0) return null;
 
+  const categoryItems = Object.fromEntries(categories.map((c) => [c.id, c.name]));
+
   return (
     <Card>
       <CardHeader>
@@ -57,7 +59,7 @@ export function WhatIfCalculator({ categories }: { categories: Category[] }) {
         <div className="flex flex-wrap items-end gap-2">
           <div className="min-w-[8rem]">
             <label className="text-xs text-muted-foreground">Category</label>
-            <Select value={categoryId} onValueChange={(v) => setCategoryId(v ?? "")}>
+            <Select value={categoryId} onValueChange={(v) => setCategoryId(v ?? "")} items={categoryItems}>
               <SelectTrigger className="w-40">
                 <SelectValue />
               </SelectTrigger>

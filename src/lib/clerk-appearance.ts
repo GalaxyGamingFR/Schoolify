@@ -27,6 +27,10 @@ export const clerkAppearance = {
     socialButtonsBlockButton: "border border-border bg-background hover:bg-muted",
     formFieldInput: "border border-input bg-transparent",
     footer: "bg-transparent",
+    // Hides just the "Secured by Clerk" badge (Clerk's own stable
+    // `cl-footerItem` class), not the whole footer -- the "Don't have an
+    // account? Sign up" action link is a separate element and stays.
+    footerItem: "hidden",
     footerActionLink: "text-primary hover:text-primary/80",
     dividerLine: "bg-border",
     dividerText: "text-muted-foreground",
