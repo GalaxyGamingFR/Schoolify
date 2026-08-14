@@ -5,7 +5,7 @@ import { put } from "@vercel/blob";
 import { prisma } from "@/lib/prisma";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { enforceRateLimit, aiGenerationLimiter } from "@/lib/rate-limit";
-import { extractDocumentText, extractWebsiteText, extractYouTubeTranscript, youTubeVideoId } from "@/lib/ai/extract";
+import { extractDocumentText, extractWebsiteText, fetchYouTubeTitle, youTubeVideoId } from "@/lib/ai/extract";
 import {
   generateStudyNotes,
   generateStudyQuiz,
@@ -13,6 +13,7 @@ import {
   generatePodcastScript,
   synthesizeSpeech,
   transcribeAudioUrl,
+  transcribeYouTubeVideo,
   type SourceInput,
 } from "@/lib/ai/study";
 import type { StudySourceType } from "@prisma/client";
@@ -88,7 +89,11 @@ export async function createStudySetFromLink(url: string) {
 
   const videoId = youTubeVideoId(parsed.toString());
   const { type, title, content } = videoId
-    ? { type: "YOUTUBE" as const, ...(await extractYouTubeTranscript(videoId)) }
+    ? {
+        type: "YOUTUBE" as const,
+        title: await fetchYouTubeTitle(videoId),
+        content: await transcribeYouTubeVideo(parsed.toString()),
+      }
     : { type: "WEBSITE" as const, ...(await extractWebsiteText(parsed.toString())) };
 
   const studySet = await createStudySet(user, title, { type, title, content, url: parsed.toString() });

@@ -1,6 +1,6 @@
 import { streamText, convertToModelMessages, type UIMessage } from "ai";
 import { NextResponse } from "next/server";
-import { google, NO_THINKING } from "@/lib/ai/study";
+import { TEXT_MODEL, NO_THINKING } from "@/lib/ai/study";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import { enforceRateLimit, aiGenerationLimiter } from "@/lib/rate-limit";
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
   }
 
   const result = streamText({
-    model: google("gemini-3.7-flash"),
+    model: TEXT_MODEL,
     providerOptions: NO_THINKING,
     system:
       "You are a study assistant helping a student understand their own notes below. " +

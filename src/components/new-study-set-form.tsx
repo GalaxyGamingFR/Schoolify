@@ -167,7 +167,7 @@ export function NewStudySetForm() {
             <Label htmlFor="website-url">Article page or YouTube video URL</Label>
             <Input id="website-url" name="url" type="url" placeholder="https://..." disabled={busy} className="mt-1" />
             <p className="mt-1 text-xs text-muted-foreground">
-              YouTube videos need captions available — if it fails, try pasting the transcript as text instead.
+              YouTube videos must be public. Processing a video can take a minute or two.
             </p>
           </div>
           <Button type="submit" disabled={busy}>

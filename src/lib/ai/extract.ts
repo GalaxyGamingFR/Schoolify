@@ -38,51 +38,24 @@ export function youTubeVideoId(url: string): string | null {
   }
 }
 
-// Best-effort: YouTube has no official simple transcript API, so this reads
-// the caption track list out of the watch page's embedded player response
-// (the same data the page itself uses) and fetches one track's XML. This is
-// unofficial and can break if YouTube changes that page's structure, or
-// return nothing if the video has no captions at all -- callers should
-// treat failure here as "ask the user to paste a transcript instead", not
-// as a bug to retry.
-export async function extractYouTubeTranscript(videoId: string): Promise<{ title: string; content: string }> {
-  const res = await fetch(`https://www.youtube.com/watch?v=${videoId}`, {
-    headers: { "User-Agent": "Mozilla/5.0 (compatible; SchoolifyBot/1.0)", "Accept-Language": "en-US,en" },
-  });
-  if (!res.ok) throw new Error("Couldn't reach YouTube for that video");
-  const html = await res.text();
-
-  const titleMatch = html.match(/"title":"((?:[^"\\]|\\.)*)"/);
-  const title = titleMatch ? JSON.parse(`"${titleMatch[1]}"`) : `YouTube video ${videoId}`;
-
-  const playerResponseMatch = html.match(/ytInitialPlayerResponse\s*=\s*(\{[\s\S]*?\});/);
-  if (!playerResponseMatch) throw new Error("Couldn't find captions for this video");
-
-  let tracks: { baseUrl: string; languageCode: string }[] = [];
+// A lightweight fetch of the watch page purely to read its <title> --
+// YouTube's own caption-track endpoint (the previous approach here) started
+// returning empty responses in testing, blocked by anti-bot protection that
+// requires a browser-generated proof-of-origin token a plain server fetch
+// can't produce. The actual transcript comes from Gemini's native YouTube
+// URL understanding instead (see extractYouTubeVideo below), which handles
+// the video itself rather than scraping captions.
+export async function fetchYouTubeTitle(videoId: string): Promise<string> {
   try {
-    const playerResponse = JSON.parse(playerResponseMatch[1]);
-    tracks = playerResponse?.captions?.playerCaptionsTracklistRenderer?.captionTracks ?? [];
+    const res = await fetch(`https://www.youtube.com/watch?v=${videoId}`, {
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; SchoolifyBot/1.0)", "Accept-Language": "en-US,en" },
+    });
+    const html = await res.text();
+    const titleMatch = html.match(/"title":"((?:[^"\\]|\\.)*)"/);
+    return titleMatch ? JSON.parse(`"${titleMatch[1]}"`) : `YouTube video ${videoId}`;
   } catch {
-    throw new Error("Couldn't find captions for this video");
+    return `YouTube video ${videoId}`;
   }
-  if (tracks.length === 0) throw new Error("This video doesn't have captions available");
-
-  const track = tracks.find((t) => t.languageCode?.startsWith("en")) ?? tracks[0];
-  const captionRes = await fetch(track.baseUrl);
-  if (!captionRes.ok) throw new Error("Couldn't download the captions for this video");
-  const xml = await captionRes.text();
-
-  const $ = cheerio.load(xml, { xmlMode: true });
-  const content = $("text")
-    .map((_, el) => $(el).text())
-    .get()
-    .join(" ")
-    .replace(/&amp;/g, "&")
-    .replace(/\s+/g, " ")
-    .trim();
-
-  if (!content) throw new Error("This video's captions were empty");
-  return { title, content: truncate(content) };
 }
 
 export async function extractDocumentText(fileUrl: string, contentType: string): Promise<string> {

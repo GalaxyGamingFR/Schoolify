@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Send, Sparkles } from "lucide-react";
@@ -58,11 +60,17 @@ export function StudyChat({
           >
             {m.parts
               .filter((p) => p.type === "text")
-              .map((p, i) => (
-                <span key={i} className="whitespace-pre-wrap">
-                  {p.text}
-                </span>
-              ))}
+              .map((p, i) =>
+                m.role === "user" ? (
+                  <span key={i} className="whitespace-pre-wrap">
+                    {p.text}
+                  </span>
+                ) : (
+                  <div key={i} className="prose prose-sm dark:prose-invert max-w-none [&_p]:my-1 first:[&_p]:mt-0 last:[&_p]:mb-0">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{p.text}</ReactMarkdown>
+                  </div>
+                ),
+              )}
           </div>
         ))}
       </div>

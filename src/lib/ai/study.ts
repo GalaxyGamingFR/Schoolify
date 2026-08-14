@@ -9,7 +9,11 @@ import { z } from "zod";
 // (from https://aistudio.google.com/apikey) rather than the package's
 // default GOOGLE_GENERATIVE_AI_API_KEY, matching what's already in .env.
 export const google = createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY });
-const TEXT_MODEL = google("gemini-3.7-flash");
+// gemini-3.7-flash hit "high demand" capacity errors in testing (new enough
+// that free-tier headroom is thin); gemini-2.5-flash is no longer available
+// to new API keys at all ("no longer available to new users"). 3.5-flash
+// split the difference in testing -- established, fast, actually available.
+export const TEXT_MODEL = google("gemini-3.5-flash");
 
 // None of this app's generation tasks (reformatting notes, writing a quiz
 // from them, answering a question grounded in them) need Gemini's "thinking"
@@ -110,6 +114,32 @@ export async function transcribeAudioUrl(url: string, mediaType: string): Promis
         content: [
           { type: "text", text: "Transcribe this audio verbatim. Return only the transcript, no commentary." },
           { type: "file", data: new URL(url), mediaType },
+        ],
+      },
+    ],
+  });
+  return text;
+}
+
+// Gemini can watch a public YouTube video directly given just its URL (free
+// tier: up to 8 hours of video/day, public videos only) -- this replaced an
+// earlier approach that scraped YouTube's caption-track endpoint directly,
+// which started silently returning empty responses once YouTube's anti-bot
+// protection kicked in. Video processing genuinely takes 30-90s on Gemini's
+// end regardless of thinking mode, so this one call is just slow.
+export async function transcribeYouTubeVideo(url: string): Promise<string> {
+  const { text } = await generateText({
+    model: TEXT_MODEL,
+    providerOptions: NO_THINKING,
+    messages: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: "Transcribe this video verbatim as best you can. If exact transcription isn't possible, give a thorough, detailed summary of everything said and shown instead. Return only the transcript/summary, no commentary.",
+          },
+          { type: "file", data: new URL(url), mediaType: "video/mp4" },
         ],
       },
     ],
