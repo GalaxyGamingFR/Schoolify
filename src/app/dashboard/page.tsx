@@ -4,6 +4,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { addDays, endOfDay, isBefore, isToday, startOfDay } from "date-fns";
 import { AppNav } from "@/components/app-nav";
+import { SyncingScreen } from "@/components/syncing-screen";
 import { QuickAddForm } from "@/components/quick-add-form";
 import { AssignmentRow } from "@/components/assignment-row";
 import { GuardianRequestsCard } from "@/components/guardian-requests-card";
@@ -31,12 +32,7 @@ export default async function DashboardPage() {
     return (
       <div className="flex flex-1 flex-col">
         <AppNav />
-        <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-16">
-          <p className="text-sm text-muted-foreground">
-            Waiting on the Clerk webhook to sync your account — this happens automatically
-            within a few seconds. Refresh in a moment.
-          </p>
-        </main>
+        <SyncingScreen />
       </div>
     );
   }

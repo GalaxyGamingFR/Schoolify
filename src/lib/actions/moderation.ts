@@ -12,6 +12,10 @@ async function requireAdmin() {
   return user;
 }
 
+async function logAction(actorId: string, action: string, detail: string) {
+  await prisma.adminAuditLog.create({ data: { actorId, action, detail } });
+}
+
 /** Platform-wide announcement, delivered as a notification to every user except the sender. */
 export async function sendBroadcast(input: { title: string; body?: string }) {
   const admin = await requireAdmin();
@@ -29,7 +33,7 @@ export async function sendBroadcast(input: { title: string; body?: string }) {
 }
 
 export async function removeReportedMessage(reportId: string) {
-  await requireAdmin();
+  const admin = await requireAdmin();
 
   const report = await prisma.report.findUnique({ where: { id: reportId } });
   if (!report) return;
@@ -38,13 +42,15 @@ export async function removeReportedMessage(reportId: string) {
     prisma.message.update({ where: { id: report.messageId }, data: { deletedAt: new Date() } }),
     prisma.report.update({ where: { id: reportId }, data: { status: "RESOLVED_REMOVED" } }),
   ]);
+  await logAction(admin.id, "REMOVE_MESSAGE", "Removed a reported message");
 
   revalidatePath("/moderation");
 }
 
 export async function dismissReport(reportId: string) {
-  await requireAdmin();
+  const admin = await requireAdmin();
 
   await prisma.report.update({ where: { id: reportId }, data: { status: "RESOLVED_DISMISSED" } });
+  await logAction(admin.id, "DISMISS_REPORT", "Dismissed a report");
   revalidatePath("/moderation");
 }

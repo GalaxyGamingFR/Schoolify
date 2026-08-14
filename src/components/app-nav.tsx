@@ -14,9 +14,10 @@ import {
   ClipboardList,
   Milestone,
   MessageSquare,
-  ShieldAlert,
   Newspaper,
   Settings,
+  LayoutDashboard,
+  ScrollText,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,17 @@ const moreLinks = [
   { href: "/blog", label: "Blog", icon: Newspaper },
 ];
 
+// ADMIN is a platform-oversight role, not a student one — it gets none of
+// the student-only surfaces above (grades, courses, degree plan, etc.),
+// same reasoning as PARENT's stripped-down nav below.
+const adminLinks = [
+  { href: "/moderation", label: "Admin", icon: LayoutDashboard },
+  { href: "/admin/users", label: "Users", icon: Users },
+  { href: "/admin/logs", label: "Logs", icon: ScrollText },
+  { href: "/blog", label: "Blog", icon: Newspaper },
+  { href: "/messages", label: "Messages", icon: MessageSquare },
+];
+
 // Fetches its own current-user row rather than taking a prop — every page
 // that renders AppNav already resolves the user independently for its own
 // data needs, so this keeps every `<AppNav />` call site untouched instead
@@ -57,17 +69,13 @@ const moreLinks = [
 export async function AppNav() {
   const user = await getCurrentDbUser();
   const isParent = user?.role === "PARENT";
-  const links = user?.role === "ADMIN"
-    ? [...moreLinks, { href: "/moderation", label: "Admin", icon: ShieldAlert }]
-    : moreLinks;
+  const isAdmin = user?.role === "ADMIN";
+  const homeHref = isParent ? "/parent" : isAdmin ? "/moderation" : "/dashboard";
 
   return (
     <header className="sticky top-0 z-10 border-b border-border bg-background/80 backdrop-blur-sm">
       <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
-        <Link
-          href={isParent ? "/parent" : "/dashboard"}
-          className="flex items-center gap-2 text-lg font-semibold tracking-tight"
-        >
+        <Link href={homeHref} className="flex items-center gap-2 text-lg font-semibold tracking-tight">
           <Logo />
           Schoolify
         </Link>
@@ -89,6 +97,17 @@ export async function AppNav() {
                 <span className="hidden sm:inline">Messages</span>
               </Link>
             </>
+          ) : isAdmin ? (
+            adminLinks.map(({ href, label, icon: Icon }) => (
+              <Link
+                key={href}
+                href={href}
+                className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+              >
+                <Icon className="size-4" />
+                <span className="hidden sm:inline">{label}</span>
+              </Link>
+            ))
           ) : (
             <>
               {primaryLinks.map(({ href, label, icon: Icon }) => (
@@ -112,7 +131,7 @@ export async function AppNav() {
                   }
                 />
                 <DropdownMenuContent align="end">
-                  {links.map(({ href, label, icon: Icon }) => (
+                  {moreLinks.map(({ href, label, icon: Icon }) => (
                     <DropdownMenuItem key={href} render={<Link href={href} />}>
                       <Icon className="size-4" /> {label}
                     </DropdownMenuItem>

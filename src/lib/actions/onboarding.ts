@@ -1,8 +1,17 @@
 "use server";
 
+import { currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentDbUser } from "@/lib/current-user";
 import type { Role } from "@prisma/client";
+
+/** Polled by the syncing screen while waiting for the Clerk user.created webhook to land. */
+export async function isAccountSynced() {
+  const clerkUser = await currentUser();
+  if (!clerkUser) return false;
+  const dbUser = await prisma.user.findUnique({ where: { clerkId: clerkUser.id }, select: { id: true } });
+  return !!dbUser;
+}
 
 export async function completeOnboarding(input: { role: Role; dateOfBirth?: string }) {
   const user = await getCurrentDbUser();

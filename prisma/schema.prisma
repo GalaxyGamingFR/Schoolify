@@ -22,6 +22,11 @@ enum Role {
   ADMIN
 }
 
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+
 enum GuardianshipStatus {
   PENDING
   ACCEPTED
@@ -66,6 +71,7 @@ model User {
   email       String   @unique
   name        String
   role        Role     @default(STUDENT)
+  status      UserStatus @default(ACTIVE)
   dateOfBirth DateTime? // drives COPPA gating (Phase 6)
   // Null until the role-picker + (for students) date-of-birth step is
   // completed. The dashboard is the single choke point that checks this —
@@ -116,7 +122,26 @@ model User {
   blogPosts    BlogPost[]
   blogComments BlogComment[]
 
+  auditLogEntries AdminAuditLog[] @relation("AuditActor")
+
   @@index([role])
+}
+
+// Real audit trail for admin actions that don't otherwise leave a
+// timestamped record -- a role change or suspension is just a field update
+// on User, with nothing to say *who* did it or *when* short of this.
+// System Logs (/admin/logs) merges this with the other already-timestamped
+// tables (signups, reports, schools, broadcasts) rather than fabricating a
+// log the way the original admin.md mockup did.
+model AdminAuditLog {
+  id        String   @id @default(cuid())
+  actor     User     @relation("AuditActor", fields: [actorId], references: [id], onDelete: Cascade)
+  actorId   String
+  action    String // e.g. "SUSPEND_USER", "REACTIVATE_USER", "CHANGE_ROLE"
+  detail    String // human-readable, e.g. "Suspended Jane Doe" or "Changed Jane Doe's role to ADMIN"
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
 }
 
 model BlogPost {
