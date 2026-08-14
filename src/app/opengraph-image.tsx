@@ -1,7 +1,11 @@
 import { ImageResponse } from "next/og";
+import { readFileSync } from "fs";
+import { join } from "path";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
+
+const logoDataUri = `data:image/png;base64,${readFileSync(join(process.cwd(), "src/app/icon.png")).toString("base64")}`;
 
 export default function OpengraphImage() {
   return new ImageResponse(
@@ -18,24 +22,8 @@ export default function OpengraphImage() {
           fontFamily: "sans-serif",
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            width: 96,
-            height: 96,
-            alignItems: "flex-end",
-            justifyContent: "center",
-            gap: "10%",
-            background: "#4f46e5",
-            borderRadius: 22,
-            padding: "18% 18% 14%",
-            marginBottom: 32,
-          }}
-        >
-          <div style={{ width: "20%", height: "38%", borderRadius: 999, background: "white" }} />
-          <div style={{ width: "20%", height: "64%", borderRadius: 999, background: "white" }} />
-          <div style={{ width: "20%", height: "90%", borderRadius: 999, background: "white" }} />
-        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={logoDataUri} width={120} height={120} alt="" style={{ marginBottom: 24 }} />
         <div style={{ display: "flex", fontSize: 72, fontWeight: 700, color: "#f4f4f5" }}>
           Schoolify
         </div>
