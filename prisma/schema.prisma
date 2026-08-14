@@ -74,6 +74,14 @@ model User {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  // Notification preferences (Settings page) -- checked in notify.ts before
+  // a Notification row is ever created, not just filtered at display time,
+  // so an opted-out user doesn't even get the row.
+  notifyOnMessage      Boolean @default(true)
+  notifyOnGuardianship Boolean @default(true)
+  notifyOnSchoolInvite Boolean @default(true)
+  notifyOnBroadcast    Boolean @default(true)
+
   // Student-side relations
   enrollments      Enrollment[]
   assignments      Assignment[]

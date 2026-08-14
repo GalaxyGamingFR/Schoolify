@@ -16,6 +16,7 @@ import {
   MessageSquare,
   ShieldAlert,
   Newspaper,
+  Settings,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -123,6 +124,13 @@ export async function AppNav() {
 
           <div className="ml-2 flex items-center gap-1">
             <NotificationBell />
+            <Link
+              href="/settings"
+              aria-label="Settings"
+              className="flex size-9 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
+              <Settings className="size-4" />
+            </Link>
             <ThemeToggle />
             <UserButton />
           </div>

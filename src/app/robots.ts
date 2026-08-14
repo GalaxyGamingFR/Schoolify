@@ -19,6 +19,7 @@ export default function robots(): MetadataRoute.Robots {
         "/notifications",
         "/moderation",
         "/blog",
+        "/settings",
         "/api/",
       ],
     },
