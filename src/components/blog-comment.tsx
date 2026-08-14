@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type Dispatch, type SetStateAction } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { CommentForm } from "@/components/comment-form";
 import { CommentReactions } from "@/components/comment-reactions";
@@ -8,29 +8,28 @@ import { DeleteCommentButton } from "@/components/delete-comment-button";
 import { Button } from "@/components/ui/button";
 import { Reply } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-type CommentData = {
-  id: string;
-  body: string;
-  createdAt: Date;
-  authorId: string;
-  author: { name: string };
-  reactions: { emoji: string; userId: string }[];
-  replies?: CommentData[];
-};
+import type { CommentData } from "@/lib/comment-tree";
 
 export function BlogComment({
   comment,
   postId,
   currentUserId,
+  currentUserName,
   isAdmin,
+  onUpdate,
   isReply = false,
+  parentId,
 }: {
   comment: CommentData;
   postId: string;
   currentUserId: string;
+  currentUserName: string;
   isAdmin: boolean;
+  onUpdate: Dispatch<SetStateAction<CommentData[]>>;
   isReply?: boolean;
+  // Id of the top-level comment this one belongs to -- only meaningful
+  // when isReply is true, since replies can't themselves have replies.
+  parentId?: string;
 }) {
   const [replying, setReplying] = useState(false);
 
@@ -61,7 +60,14 @@ export function BlogComment({
             </Button>
           )}
         </div>
-        {(comment.authorId === currentUserId || isAdmin) && <DeleteCommentButton commentId={comment.id} />}
+        {(comment.authorId === currentUserId || isAdmin) && (
+          <DeleteCommentButton
+            commentId={comment.id}
+            parentId={isReply ? parentId : undefined}
+            comment={comment}
+            onUpdate={onUpdate}
+          />
+        )}
       </div>
 
       {replying && (
@@ -72,6 +78,9 @@ export function BlogComment({
             placeholder={`Reply to ${comment.author.name}...`}
             autoFocus
             onPosted={() => setReplying(false)}
+            currentUserId={currentUserId}
+            currentUserName={currentUserName}
+            onUpdate={onUpdate}
           />
         </div>
       )}
@@ -84,8 +93,11 @@ export function BlogComment({
               comment={r}
               postId={postId}
               currentUserId={currentUserId}
+              currentUserName={currentUserName}
               isAdmin={isAdmin}
+              onUpdate={onUpdate}
               isReply
+              parentId={comment.id}
             />
           ))}
         </div>

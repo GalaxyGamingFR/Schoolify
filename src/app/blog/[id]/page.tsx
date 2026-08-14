@@ -6,8 +6,7 @@ import { getCurrentDbUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import { AppNav } from "@/components/app-nav";
 import { AppFooter } from "@/components/app-footer";
-import { CommentForm } from "@/components/comment-form";
-import { BlogComment } from "@/components/blog-comment";
+import { BlogCommentsSection } from "@/components/blog-comments-section";
 import { DeletePostButton } from "@/components/delete-post-button";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Pencil } from "lucide-react";
@@ -22,30 +21,27 @@ export default async function BlogPostPage({ params }: { params: Promise<{ id: s
   if (!user) redirect("/sign-in");
 
   const { id } = await params;
-  const [post, totalComments] = await Promise.all([
-    prisma.blogPost.findUnique({
-      where: { id },
-      include: {
-        author: { select: { name: true } },
-        comments: {
-          where: { parentId: null },
-          include: {
-            author: { select: { name: true } },
-            reactions: { select: { emoji: true, userId: true } },
-            replies: {
-              include: {
-                author: { select: { name: true } },
-                reactions: { select: { emoji: true, userId: true } },
-              },
-              orderBy: { createdAt: "asc" },
+  const post = await prisma.blogPost.findUnique({
+    where: { id },
+    include: {
+      author: { select: { name: true } },
+      comments: {
+        where: { parentId: null },
+        include: {
+          author: { select: { name: true } },
+          reactions: { select: { emoji: true, userId: true } },
+          replies: {
+            include: {
+              author: { select: { name: true } },
+              reactions: { select: { emoji: true, userId: true } },
             },
+            orderBy: { createdAt: "asc" },
           },
-          orderBy: { createdAt: "asc" },
         },
+        orderBy: { createdAt: "asc" },
       },
-    }),
-    prisma.blogComment.count({ where: { postId: id } }),
-  ]);
+    },
+  });
   if (!post) notFound();
 
   const isAdmin = user.role === "ADMIN";
@@ -78,18 +74,13 @@ export default async function BlogPostPage({ params }: { params: Promise<{ id: s
 
         <p className="mt-6 whitespace-pre-wrap text-sm leading-relaxed">{post.body}</p>
 
-        <h2 className="mt-10 text-sm font-semibold text-muted-foreground">
-          {totalComments} comment{totalComments === 1 ? "" : "s"}
-        </h2>
-        <div className="mt-3">
-          <CommentForm postId={post.id} />
-        </div>
-
-        <div className="mt-4 space-y-3">
-          {post.comments.map((c) => (
-            <BlogComment key={c.id} comment={c} postId={post.id} currentUserId={user.id} isAdmin={isAdmin} />
-          ))}
-        </div>
+        <BlogCommentsSection
+          postId={post.id}
+          initialComments={post.comments}
+          currentUserId={user.id}
+          currentUserName={user.name}
+          isAdmin={isAdmin}
+        />
       </main>
       <AppFooter />
     </div>

@@ -1,25 +1,30 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { toggleCommentReaction } from "@/lib/actions/blog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { REACTION_EMOJI } from "@/lib/blog-reactions";
 import { cn } from "@/lib/utils";
 import { SmilePlus } from "lucide-react";
 
+type Reaction = { emoji: string; userId: string };
+
 export function CommentReactions({
   commentId,
-  reactions,
+  reactions: initialReactions,
   currentUserId,
 }: {
   commentId: string;
-  reactions: { emoji: string; userId: string }[];
+  reactions: Reaction[];
   currentUserId: string;
 }) {
+  // Local state, not derived straight from the `reactions` prop -- this
+  // updates the instant a reaction is clicked instead of waiting on a
+  // server round trip (previously: await the mutation, then router.refresh()
+  // the *entire* page just to reflect one emoji).
+  const [reactions, setReactions] = useState(initialReactions);
   const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
-  const router = useRouter();
 
   const counts = new Map<string, { count: number; mine: boolean }>();
   for (const r of reactions) {
@@ -31,9 +36,18 @@ export function CommentReactions({
 
   function react(emoji: string) {
     setOpen(false);
+    const hadIt = reactions.some((r) => r.userId === currentUserId && r.emoji === emoji);
+    const optimistic = hadIt
+      ? reactions.filter((r) => !(r.userId === currentUserId && r.emoji === emoji))
+      : [...reactions, { emoji, userId: currentUserId }];
+    setReactions(optimistic);
+
     startTransition(async () => {
-      await toggleCommentReaction(commentId, emoji);
-      router.refresh();
+      try {
+        await toggleCommentReaction(commentId, emoji);
+      } catch {
+        setReactions(reactions); // revert to the pre-click state
+      }
     });
   }
 
