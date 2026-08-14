@@ -7,7 +7,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Send, Sparkles } from "lucide-react";
+import { Send, Sparkles, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type InitialMessage = { id: string; role: "user" | "assistant"; body: string };
@@ -20,7 +20,7 @@ export function StudyChat({
   initialMessages: InitialMessage[];
 }) {
   const [input, setInput] = useState("");
-  const { messages, sendMessage, status } = useChat({
+  const { messages, sendMessage, status, error, regenerate } = useChat({
     transport: new DefaultChatTransport({ api: "/api/study-chat", body: { studySetId } }),
     messages: initialMessages.map((m) => ({
       id: m.id,
@@ -73,6 +73,14 @@ export function StudyChat({
               )}
           </div>
         ))}
+        {error && (
+          <div className="flex items-center gap-2 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            <span className="flex-1">{error.message}</span>
+            <Button variant="ghost" size="xs" onClick={() => regenerate()}>
+              <RotateCcw className="size-3.5" /> Retry
+            </Button>
+          </div>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="flex gap-2 border-t p-2">

@@ -46,5 +46,14 @@ export async function POST(request: Request) {
     },
   });
 
-  return result.toUIMessageStreamResponse();
+  return result.toUIMessageStreamResponse({
+    onError: (error) => {
+      console.error("[study-chat] streamText error:", error);
+      const message = error instanceof Error ? error.message : String(error);
+      if (/RESOURCE_EXHAUSTED|UNAVAILABLE|high demand|429|503/i.test(message)) {
+        return "Gemini is overloaded right now — try sending that again in a moment.";
+      }
+      return "Something went wrong — try sending that again.";
+    },
+  });
 }
