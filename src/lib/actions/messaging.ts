@@ -188,20 +188,48 @@ export async function getOrCreateCourseConversation(courseId: string) {
 }
 
 const MAX_MESSAGE_LENGTH = 4000;
+// Only a URL Vercel Blob itself issued should ever be attachable to a
+// message -- without this check, sendMessage would happily accept any
+// external URL as an "attachment" (a spoofed tracking pixel or phishing
+// image), completely bypassing the type/size validation the upload route
+// enforces.
+const BLOB_HOST_SUFFIX = ".public.blob.vercel-storage.com";
 
-export async function sendMessage(input: { conversationId: string; body: string }) {
+export async function sendMessage(input: {
+  conversationId: string;
+  body: string;
+  attachmentUrl?: string;
+  attachmentType?: string;
+}) {
   const user = await getCurrentDbUser();
   if (!user) throw new Error("Not signed in");
   await enforceRateLimit(messageLimiter, user.id);
-  if (!input.body.trim()) throw new Error("Message can't be empty");
-  if (input.body.length > MAX_MESSAGE_LENGTH) {
+
+  const body = input.body.trim();
+  if (!body && !input.attachmentUrl) throw new Error("Message can't be empty");
+  if (body.length > MAX_MESSAGE_LENGTH) {
     throw new Error(`Message is too long (max ${MAX_MESSAGE_LENGTH} characters)`);
+  }
+  if (input.attachmentUrl) {
+    let hostname: string;
+    try {
+      hostname = new URL(input.attachmentUrl).hostname;
+    } catch {
+      throw new Error("Invalid attachment");
+    }
+    if (!hostname.endsWith(BLOB_HOST_SUFFIX)) throw new Error("Invalid attachment");
   }
 
   const conversation = await assertConversationAccess(user.id, input.conversationId);
 
   const message = await prisma.message.create({
-    data: { conversationId: input.conversationId, senderId: user.id, body: input.body.trim() },
+    data: {
+      conversationId: input.conversationId,
+      senderId: user.id,
+      body,
+      attachmentUrl: input.attachmentUrl,
+      attachmentType: input.attachmentType,
+    },
   });
 
   const recipientIds =

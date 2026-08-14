@@ -102,7 +102,9 @@ export default async function MessagesPage() {
                         {c.unread && <span className="size-2 shrink-0 rounded-full bg-primary" />}
                       </p>
                       <p className="truncate text-xs text-muted-foreground">
-                        {c.lastMessage ? c.lastMessage.body : "No messages yet"}
+                        {c.lastMessage
+                          ? c.lastMessage.body || (c.lastMessage.attachmentUrl ? "📷 Image" : "")
+                          : "No messages yet"}
                       </p>
                     </div>
                     {c.lastMessage && (

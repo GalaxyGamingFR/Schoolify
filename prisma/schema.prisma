@@ -568,6 +568,13 @@ model Message {
   sender         User         @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
   senderId       String
   body           String
+  // Both null for a text-only message; set together for an image/gif
+  // attachment. Uploaded via Vercel Blob's client-upload flow, which
+  // enforces allowed MIME types and a size cap server-side at token
+  // issuance (see src/app/api/upload/route.ts) -- not just a client-side
+  // check that a modified request could skip.
+  attachmentUrl   String?
+  attachmentType  String?
   createdAt      DateTime     @default(now())
   // Soft delete on moderation removal — keeps the Report's history intact
   // instead of hard-deleting evidence of what was reported.

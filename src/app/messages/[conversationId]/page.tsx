@@ -71,6 +71,8 @@ export default async function ConversationPage({
             senderId: m.senderId,
             senderName: m.sender.name,
             createdAt: m.createdAt.toISOString(),
+            attachmentUrl: m.attachmentUrl,
+            attachmentType: m.attachmentType,
           }))}
         />
       </main>
