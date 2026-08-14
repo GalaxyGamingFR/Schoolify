@@ -72,6 +72,7 @@ export default async function OpportunitiesPage({
         : {}),
     },
     orderBy: { title: "asc" },
+    take: 200,
   });
 
   return (

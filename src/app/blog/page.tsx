@@ -21,6 +21,7 @@ export default async function BlogPage() {
   const posts = await prisma.blogPost.findMany({
     include: { author: { select: { name: true } }, _count: { select: { comments: true } } },
     orderBy: { createdAt: "desc" },
+    take: 200,
   });
 
   return (
