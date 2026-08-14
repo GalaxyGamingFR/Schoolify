@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { Logo } from "@/components/logo";
+import { NotificationBell } from "@/components/notification-bell";
 
 const primaryLinks = [
   { href: "/dashboard", label: "Today", icon: Home },
@@ -119,6 +120,7 @@ export async function AppNav() {
           )}
 
           <div className="ml-2 flex items-center gap-1">
+            <NotificationBell />
             <ThemeToggle />
             <UserButton />
           </div>

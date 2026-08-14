@@ -5,6 +5,9 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { canMessageDirectly } from "@/lib/messaging";
 import { enforceRateLimit, messageLimiter, sensitiveActionLimiter } from "@/lib/rate-limit";
+import { notifyMany } from "@/lib/notify";
+
+const NOTIFICATION_PREVIEW_LENGTH = 140;
 
 async function courseIdsFor(userId: string): Promise<string[]> {
   const [enrolled, taught] = await Promise.all([
@@ -37,6 +40,17 @@ async function isGuardianLinked(userAId: string, userBId: string): Promise<boole
     },
   });
   return guardianship !== null;
+}
+
+/** Everyone on a course's roster (teacher + enrolled students) except the given user -- COURSE conversations have no participant rows. */
+async function courseRecipientIds(courseId: string, excludeUserId: string): Promise<string[]> {
+  const course = await prisma.course.findUnique({
+    where: { id: courseId },
+    include: { enrollments: { select: { studentId: true } } },
+  });
+  if (!course) return [];
+  const ids = [course.teacherId, ...course.enrollments.map((e) => e.studentId)];
+  return ids.filter((id): id is string => id !== null && id !== excludeUserId);
 }
 
 /** Access check for DIRECT/GROUP conversations (participant-based) and COURSE ones (roster-derived). */
@@ -184,11 +198,30 @@ export async function sendMessage(input: { conversationId: string; body: string 
     throw new Error(`Message is too long (max ${MAX_MESSAGE_LENGTH} characters)`);
   }
 
-  await assertConversationAccess(user.id, input.conversationId);
+  const conversation = await assertConversationAccess(user.id, input.conversationId);
 
   const message = await prisma.message.create({
     data: { conversationId: input.conversationId, senderId: user.id, body: input.body.trim() },
   });
+
+  const recipientIds =
+    conversation.type === "COURSE"
+      ? await courseRecipientIds(conversation.course!.id, user.id)
+      : await prisma.conversationParticipant
+          .findMany({ where: { conversationId: input.conversationId }, select: { userId: true } })
+          .then((rows) => rows.map((r) => r.userId).filter((id) => id !== user.id));
+
+  const preview =
+    input.body.trim().length > NOTIFICATION_PREVIEW_LENGTH
+      ? `${input.body.trim().slice(0, NOTIFICATION_PREVIEW_LENGTH)}…`
+      : input.body.trim();
+  await notifyMany(
+    recipientIds,
+    "MESSAGE",
+    `New message from ${user.name}`,
+    `/messages/${input.conversationId}`,
+    preview,
+  );
 
   revalidatePath(`/messages/${input.conversationId}`);
   revalidatePath("/messages");

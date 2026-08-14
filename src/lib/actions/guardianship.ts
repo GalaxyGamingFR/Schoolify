@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { enforceRateLimit, sensitiveActionLimiter } from "@/lib/rate-limit";
+import { notify } from "@/lib/notify";
 
 // Acceptance authority always sits with the student — it's their data being
 // shared, so they're the one who has to consent, regardless of who
@@ -38,6 +39,13 @@ export async function inviteGuardian(parentEmail: string) {
     throw new Error("That guardian is already linked (or already invited)");
   }
 
+  await notify(
+    parent.id,
+    "GUARDIANSHIP_ACCEPTED",
+    `${student.name} added you as their guardian`,
+    "/parent",
+  );
+
   revalidatePath("/parent");
   revalidatePath("/dashboard");
 }
@@ -59,6 +67,13 @@ export async function requestStudentLink(studentEmail: string) {
     throw new Error("That student is already linked (or already invited)");
   }
 
+  await notify(
+    student.id,
+    "GUARDIANSHIP_REQUEST",
+    `${parent.name} wants to link as your guardian`,
+    "/dashboard",
+  );
+
   revalidatePath("/parent");
 }
 
@@ -66,10 +81,19 @@ export async function acceptGuardianship(guardianshipId: string) {
   const student = await getCurrentDbUser();
   if (!student) throw new Error("Not signed in");
 
-  await prisma.guardianship.updateMany({
+  const guardianship = await prisma.guardianship.findFirst({
     where: { id: guardianshipId, studentId: student.id, status: "PENDING" },
-    data: { status: "ACCEPTED" },
   });
+  if (!guardianship) return;
+
+  await prisma.guardianship.update({ where: { id: guardianship.id }, data: { status: "ACCEPTED" } });
+
+  await notify(
+    guardianship.parentId,
+    "GUARDIANSHIP_ACCEPTED",
+    `${student.name} accepted your guardian link request`,
+    `/parent/${student.id}`,
+  );
 
   revalidatePath("/dashboard");
   revalidatePath("/parent");

@@ -99,6 +99,8 @@ model User {
   blockedUsers    Block[]                   @relation("BlockedByMe")
   blockedByUsers  Block[]                   @relation("BlockedMe")
 
+  notifications Notification[]
+
   @@index([role])
 }
 
@@ -540,4 +542,35 @@ model Block {
 
   @@unique([blockerId, blockedId])
   @@index([blockedId])
+}
+
+// --- Notifications ---
+// Created server-side at the handful of points where something happens
+// *to* a user because of someone else's action (a message arrives, a
+// guardian link request needs a response) -- not a generic pub/sub system,
+// and not covering time-based events (assignment due soon, grade trend
+// alerts) since those need a scheduled job this pass doesn't add. In-app
+// only, polled same as messages (see roadmap.md Phase 8 note on why
+// polling instead of a push transport).
+enum NotificationType {
+  MESSAGE
+  GUARDIANSHIP_REQUEST
+  GUARDIANSHIP_ACCEPTED
+  SCHOOL_INVITE
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  type      NotificationType
+  title     String
+  body      String?
+  // Where clicking the notification should take you (e.g. "/messages/abc").
+  link      String
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  @@index([userId, createdAt])
+  @@index([userId, readAt])
 }

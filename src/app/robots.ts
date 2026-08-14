@@ -10,7 +10,16 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: ["/", "/sign-in", "/sign-up", "/faq", "/terms", "/privacy"],
-      disallow: ["/dashboard", "/courses", "/calendar", "/grades", "/messages", "/moderation", "/api/"],
+      disallow: [
+        "/dashboard",
+        "/courses",
+        "/calendar",
+        "/grades",
+        "/messages",
+        "/notifications",
+        "/moderation",
+        "/api/",
+      ],
     },
     sitemap: "https://schoolify.tariqkhalif.me/sitemap.xml",
   };

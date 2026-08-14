@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { emailDomain, generateJoinCode, matchesSchoolDomain, normalizeDomain } from "@/lib/school";
 import { enforceRateLimit, joinCodeLimiter, sensitiveActionLimiter } from "@/lib/rate-limit";
+import { notify } from "@/lib/notify";
 
 const MAX_JOIN_CODE_ATTEMPTS = 5;
 
@@ -90,6 +91,15 @@ export async function inviteTeacher(schoolId: string, teacherEmail: string) {
     });
   } catch {
     throw new Error("That email is already staff (or invited) at this school");
+  }
+
+  if (existingUser) {
+    await notify(
+      existingUser.id,
+      "SCHOOL_INVITE",
+      `You were added as a teacher at ${school.name}`,
+      `/school/${schoolId}`,
+    );
   }
 
   revalidatePath(`/school/${schoolId}`);
