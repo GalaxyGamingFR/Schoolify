@@ -61,23 +61,24 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  --primary: #4f46e5; /* indigo-600 — matches error.tsx's reset button, the
+    only place this app previously had a real accent color */
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --accent: oklch(0.94 0.02 275); /* faint indigo tint instead of pure gray */
+  --accent-foreground: #4338ca; /* indigo-700 */
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  --ring: #6366f1; /* indigo-500 */
+  --chart-1: #4f46e5; /* indigo-600 */
+  --chart-2: #7c3aed; /* violet-600 */
+  --chart-3: #c026d3; /* fuchsia-600 */
+  --chart-4: #0891b2; /* cyan-600 */
+  --chart-5: #059669; /* emerald-600 */
   --radius: 0.625rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
@@ -100,23 +101,24 @@
   --card-foreground: #f4f4f5;
   --popover: #18181b;
   --popover-foreground: #f4f4f5;
-  --primary: #f4f4f5;
-  --primary-foreground: #18181b;
+  --primary: #6366f1; /* indigo-500 — brighter than light mode's indigo-600
+    so it still pops against near-black instead of reading muddy */
+  --primary-foreground: #f4f4f5;
   --secondary: #27272a; /* zinc-800 */
   --secondary-foreground: #f4f4f5;
   --muted: #27272a;
   --muted-foreground: #a1a1aa; /* zinc-400 */
-  --accent: #27272a;
-  --accent-foreground: #f4f4f5;
+  --accent: #262639; /* zinc-800 with an indigo lean instead of pure gray */
+  --accent-foreground: #a5b4fc; /* indigo-300 */
   --destructive: oklch(0.704 0.191 22.216);
   --border: #27272a; /* zinc-800 */
   --input: #27272a;
-  --ring: #52525b; /* zinc-600 — subtle focus ring, not the default bright ring */
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  --ring: #818cf8; /* indigo-400 — bright enough to read as a focus ring on black */
+  --chart-1: #818cf8; /* indigo-400 */
+  --chart-2: #a78bfa; /* violet-400 */
+  --chart-3: #e879f9; /* fuchsia-400 */
+  --chart-4: #22d3ee; /* cyan-400 */
+  --chart-5: #34d399; /* emerald-400 */
   --sidebar: #18181b;
   --sidebar-foreground: #f4f4f5;
   --sidebar-primary: oklch(0.488 0.243 264.376);
