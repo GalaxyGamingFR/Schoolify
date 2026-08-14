@@ -22,9 +22,23 @@ import { getCurrentDbUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import { AppNav } from "@/components/app-nav";
 import { AssignmentRow } from "@/components/assignment-row";
+import { EventRow } from "@/components/event-row";
+import { NewEventForm } from "@/components/new-event-form";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+
+type CalendarItem =
+  | {
+      kind: "assignment";
+      id: string;
+      title: string;
+      at: Date;
+      status: string;
+      priority: "LOW" | "MEDIUM" | "HIGH";
+      courseName?: string | null;
+    }
+  | { kind: "event"; id: string; title: string; at: Date; location: string | null };
 
 type View = "month" | "week" | "day";
 
@@ -63,16 +77,37 @@ export default async function CalendarPage({
   const date = params.date ? parseISO(params.date) : new Date();
 
   const { start, end } = rangeFor(view, date);
-  const assignments = await prisma.assignment.findMany({
-    where: { userId: user.id, dueAt: { gte: start, lte: addDays(end, 1) } },
-    include: { course: { select: { name: true } } },
-    orderBy: { dueAt: "asc" },
-  });
+  const [assignments, events] = await Promise.all([
+    prisma.assignment.findMany({
+      where: { userId: user.id, dueAt: { gte: start, lte: addDays(end, 1) } },
+      include: { course: { select: { name: true } } },
+      orderBy: { dueAt: "asc" },
+    }),
+    prisma.calendarEvent.findMany({
+      where: { userId: user.id, startsAt: { gte: start, lte: addDays(end, 1) } },
+      orderBy: { startsAt: "asc" },
+    }),
+  ]);
 
-  const byDay = new Map<string, typeof assignments>();
-  for (const a of assignments) {
-    const key = format(a.dueAt, "yyyy-MM-dd");
-    byDay.set(key, [...(byDay.get(key) ?? []), a]);
+  const items: CalendarItem[] = [
+    ...assignments.map(
+      (a): CalendarItem => ({
+        kind: "assignment",
+        id: a.id,
+        title: a.title,
+        at: a.dueAt,
+        status: a.status,
+        priority: a.priority,
+        courseName: a.course?.name,
+      }),
+    ),
+    ...events.map((e): CalendarItem => ({ kind: "event", id: e.id, title: e.title, at: e.startsAt, location: e.location })),
+  ].sort((a, b) => a.at.getTime() - b.at.getTime());
+
+  const byDay = new Map<string, CalendarItem[]>();
+  for (const item of items) {
+    const key = format(item.at, "yyyy-MM-dd");
+    byDay.set(key, [...(byDay.get(key) ?? []), item]);
   }
 
   const prevHref = `/calendar?view=${view}&date=${format(shift(view, date, -1), "yyyy-MM-dd")}`;
@@ -128,9 +163,13 @@ export default async function CalendarPage({
           </div>
         </div>
 
-        <div className="mt-6">
+        <div className="mt-3">
+          <NewEventForm defaultDate={format(date, "yyyy-MM-dd")} />
+        </div>
+
+        <div className="mt-4">
           {view === "day" ? (
-            <DayView assignments={byDay.get(format(date, "yyyy-MM-dd")) ?? []} />
+            <DayView items={byDay.get(format(date, "yyyy-MM-dd")) ?? []} />
           ) : (
             <GridView
               days={eachDayOfInterval({ start, end })}
@@ -145,34 +184,27 @@ export default async function CalendarPage({
   );
 }
 
-function DayView({
-  assignments,
-}: {
-  assignments: Array<{
-    id: string;
-    title: string;
-    dueAt: Date;
-    status: string;
-    priority: "LOW" | "MEDIUM" | "HIGH";
-    course: { name: string } | null;
-  }>;
-}) {
-  if (assignments.length === 0) {
-    return <p className="text-sm text-muted-foreground">Nothing due this day.</p>;
+function DayView({ items }: { items: CalendarItem[] }) {
+  if (items.length === 0) {
+    return <p className="text-sm text-muted-foreground">Nothing today.</p>;
   }
   return (
     <div className="space-y-2">
-      {assignments.map((a) => (
-        <AssignmentRow
-          key={a.id}
-          id={a.id}
-          title={a.title}
-          dueAt={a.dueAt}
-          done={a.status === "DONE"}
-          priority={a.priority}
-          courseName={a.course?.name}
-        />
-      ))}
+      {items.map((item) =>
+        item.kind === "assignment" ? (
+          <AssignmentRow
+            key={item.id}
+            id={item.id}
+            title={item.title}
+            dueAt={item.at}
+            done={item.status === "DONE"}
+            priority={item.priority}
+            courseName={item.courseName}
+          />
+        ) : (
+          <EventRow key={item.id} id={item.id} title={item.title} startsAt={item.at} location={item.location} />
+        ),
+      )}
     </div>
   );
 }
@@ -184,7 +216,7 @@ function GridView({
   compact,
 }: {
   days: Date[];
-  byDay: Map<string, Array<{ id: string; title: string; status: string; dueAt: Date }>>;
+  byDay: Map<string, CalendarItem[]>;
   currentMonth: Date;
   compact: boolean;
 }) {
@@ -217,15 +249,16 @@ function GridView({
               {format(day, "d")}
             </span>
             <div className="mt-1 space-y-0.5">
-              {items.slice(0, compact ? 2 : 5).map((a) => (
+              {items.slice(0, compact ? 2 : 5).map((item) => (
                 <p
-                  key={a.id}
+                  key={item.id}
                   className={cn(
-                    "truncate rounded bg-secondary px-1 py-0.5 text-[0.7rem]",
-                    a.status === "DONE" && "text-muted-foreground line-through",
+                    "truncate rounded px-1 py-0.5 text-[0.7rem]",
+                    item.kind === "event" ? "bg-primary/15 text-primary" : "bg-secondary",
+                    item.kind === "assignment" && item.status === "DONE" && "text-muted-foreground line-through",
                   )}
                 >
-                  {a.title}
+                  {item.title}
                 </p>
               ))}
               {items.length > (compact ? 2 : 5) && (

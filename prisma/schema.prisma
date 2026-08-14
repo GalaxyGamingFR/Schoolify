@@ -101,7 +101,41 @@ model User {
 
   notifications Notification[]
 
+  // Phase 11: admin-authored Blog/announcements (Module H-adjacent, mined
+  // from projectSpec.md's Content Manager). Deliberately not tied into
+  // Notification/Broadcast -- pull content you browse, not push, so admins
+  // posting regularly doesn't spam everyone the way a broadcast would.
+  blogPosts    BlogPost[]
+  blogComments BlogComment[]
+
   @@index([role])
+}
+
+model BlogPost {
+  id        String   @id @default(cuid())
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String
+  title     String
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  comments BlogComment[]
+
+  @@index([authorId])
+  @@index([createdAt])
+}
+
+model BlogComment {
+  id        String   @id @default(cuid())
+  post      BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String
+  body      String
+  createdAt DateTime @default(now())
+
+  @@index([postId, createdAt])
 }
 
 model Guardianship {

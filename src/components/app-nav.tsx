@@ -15,6 +15,7 @@ import {
   Milestone,
   MessageSquare,
   ShieldAlert,
+  Newspaper,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -45,6 +46,7 @@ const moreLinks = [
   { href: "/portfolio", label: "Portfolio", icon: FileUser },
   { href: "/applications", label: "Applications", icon: ClipboardList },
   { href: "/degree", label: "Degree plan", icon: Milestone },
+  { href: "/blog", label: "Blog", icon: Newspaper },
 ];
 
 // Fetches its own current-user row rather than taking a prop — every page
@@ -55,7 +57,7 @@ export async function AppNav() {
   const user = await getCurrentDbUser();
   const isParent = user?.role === "PARENT";
   const links = user?.role === "ADMIN"
-    ? [...moreLinks, { href: "/moderation", label: "Moderation", icon: ShieldAlert }]
+    ? [...moreLinks, { href: "/moderation", label: "Admin", icon: ShieldAlert }]
     : moreLinks;
 
   return (

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
-import { format } from "date-fns";
+import { format, subDays } from "date-fns";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import { AppNav } from "@/components/app-nav";
@@ -10,8 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 export const metadata: Metadata = {
-  title: "Moderation",
-  description: "Review reported messages and send platform-wide announcements.",
+  title: "Admin",
+  description: "Platform overview, announcements, and reported message review.",
 };
 
 export default async function ModerationPage() {
@@ -22,20 +22,61 @@ export default async function ModerationPage() {
   // real operator. See roadmap.md.
   if (user.role !== "ADMIN") notFound();
 
-  const reports = await prisma.report.findMany({
-    where: { status: "OPEN" },
-    include: {
-      message: { include: { sender: { select: { name: true, email: true } } } },
-      reporter: { select: { name: true, email: true } },
-    },
-    orderBy: { createdAt: "asc" },
-  });
+  const sevenDaysAgo = subDays(new Date(), 7);
+  const [reports, usersByRole, totalSchools, totalCourses, newUsers7d] = await Promise.all([
+    prisma.report.findMany({
+      where: { status: "OPEN" },
+      include: {
+        message: { include: { sender: { select: { name: true, email: true } } } },
+        reporter: { select: { name: true, email: true } },
+      },
+      orderBy: { createdAt: "asc" },
+    }),
+    prisma.user.groupBy({ by: ["role"], _count: true }),
+    prisma.school.count(),
+    prisma.course.count(),
+    prisma.user.count({ where: { createdAt: { gte: sevenDaysAgo } } }),
+  ]);
+
+  const totalUsers = usersByRole.reduce((sum, r) => sum + r._count, 0);
+  const roleCounts = Object.fromEntries(usersByRole.map((r) => [r.role, r._count]));
 
   return (
     <div className="flex flex-1 flex-col">
       <AppNav />
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8">
-        <h1 className="text-3xl font-bold tracking-tight">Moderation</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Admin</h1>
+
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <Card>
+            <CardContent className="py-4">
+              <p className="text-2xl font-semibold">{totalUsers}</p>
+              <p className="text-xs text-muted-foreground">
+                Users · {roleCounts.STUDENT ?? 0} student{roleCounts.STUDENT === 1 ? "" : "s"},{" "}
+                {roleCounts.PARENT ?? 0} parent{roleCounts.PARENT === 1 ? "" : "s"},{" "}
+                {roleCounts.TEACHER ?? 0} teacher{roleCounts.TEACHER === 1 ? "" : "s"}
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="py-4">
+              <p className="text-2xl font-semibold">{newUsers7d}</p>
+              <p className="text-xs text-muted-foreground">New signups, last 7 days</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="py-4">
+              <p className="text-2xl font-semibold">{totalSchools}</p>
+              <p className="text-xs text-muted-foreground">Registered schools</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="py-4">
+              <p className="text-2xl font-semibold">{totalCourses}</p>
+              <p className="text-xs text-muted-foreground">Courses</p>
+            </CardContent>
+          </Card>
+        </div>
 
         <Card className="mt-6">
           <CardHeader>
