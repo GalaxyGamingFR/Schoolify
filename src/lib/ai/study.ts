@@ -21,10 +21,8 @@ export const NO_THINKING = { google: { thinkingConfig: { thinkingBudget: 0 } } }
 // SAME model -- confirmed live for both gemini-3.7-flash and gemini-3.5-flash
 // in testing. Different models draw from mostly-independent capacity, so
 // falling through this chain on a retryable error is far more reliable than
-// retrying the same overloaded model again. Exported so the chat route
-// (which needs a single model for streamText, not this whole chain) can at
-// least start from the same first choice.
-export const TEXT_MODEL = google("gemini-3.5-flash");
+// retrying the same overloaded model again.
+const TEXT_MODEL = google("gemini-3.5-flash");
 const MODEL_CHAIN = [TEXT_MODEL, google("gemini-3.1-flash-lite-preview"), google("gemini-3-flash-preview")];
 
 function isRetryableModelError(e: unknown): boolean {
@@ -133,6 +131,13 @@ export async function generatePodcastScript(notes: string): Promise<string> {
         "no headers, no bullet points, nothing that isn't meant to be spoken.",
       prompt: `Write a 2-4 minute spoken audio-overview script covering these study notes:\n\n${notes}`,
     }),
+  );
+  return text;
+}
+
+export async function generateChatReply(system: string, messages: ModelMessage[]): Promise<string> {
+  const { text } = await generateTextResilient((model) =>
+    generateText({ model, providerOptions: NO_THINKING, system, messages }),
   );
   return text;
 }
